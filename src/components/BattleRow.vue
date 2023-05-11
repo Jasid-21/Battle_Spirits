@@ -19,6 +19,7 @@ export default {
     },
     setup(props) {
       const store = useStore();
+      const socket = computed(() => store.state.socket);
       const row_cards = computed(() => {
         const cards = store.state.cards[props.origin];
         console.log(cards);

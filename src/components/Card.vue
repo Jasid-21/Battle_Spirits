@@ -54,6 +54,9 @@ export default {
                 return;
             }
             cardObj.value.rested = !cardObj.value.rested;
+            const socket = store.state.socket;
+            const op_id = store.state.op_id;
+            socket.sendRestUnrest(cardObj.value.id, parent.getAttribute('data-origin') + '_op', op_id);
         }
 
         return {marginLeft, cardObj, setAsCurrent, drag, restUnrest, card};

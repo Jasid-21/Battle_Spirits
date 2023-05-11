@@ -18,7 +18,9 @@
     <hr>
     <div class="avaliable_rooms_container">
       <ul class="avaliable_rooms">
-        <li v-for="(r, idx) of rooms" :key="idx">{{ r }}</li>
+        <li v-for="(r, idx) of rooms" :key="idx" 
+        :class="{choosen: choosen_room.id == idx}"
+        @click="selectRoom(idx)">{{ r }}</li>
       </ul>
     </div>
     <br>
@@ -32,10 +34,13 @@
 
 <script>
 import Navbar from '@/components/Navbar.vue';
+import { socketCreator } from '@/helpers';
 import { ref } from '@vue/reactivity';
 import { useStore } from 'vuex';
 import { useRouter } from 'vue-router';
-import { onMounted } from 'vue';
+import { onMounted, watch } from 'vue';
+import Swal from 'sweetalert2'
+
 export default {
     name: "Multiplayer",
     components: {
@@ -45,53 +50,84 @@ export default {
       const store = useStore();
       const router = useRouter();
 
+      var socket;
       const deck_list = ref([]);
       const username = ref('Sefirot');
       const choosen_deck = ref('__none__');
       const rooms = ref([]);
+      const choosen_room = ref({name: '', id: -1});
 
       const join = () => {
         if (choosen_deck.value == '__none__') {
-          alert("You need to choose a deck to join a game...");
+          Swal.fire({
+            title: 'App message',
+            html: 'You need to select a <strong>deck</strong> to join into a room...'
+          });
+
           return;
         }
 
-        const deck = deck_list.value.find(d => d.name == choosen_deck.value);
-        store.commit('setChoosenDeck', deck);
+        if (choosen_room.value.id == -1) {
+          Swal.fire({
+            title: 'App message',
+            html: 'You need to select a <strong>room</strong> to join into it...'
+          });
 
-        router.push('/game');
+          return;
+        } 
+
+        socket.socket.emit('start_duel', {username: choosen_room.value.name});
       }
 
       const host = async () => {
         if (!username.value) {
-          alert("You need to provide a username...");
+          Swal.fire({
+            title: 'App message',
+            html: 'Please, provide an <strong>username</strong> before hosting...'
+          });
           return;
         }
-        const resp = await fetch(`http://127.0.0.1:3000/rooms/new?roomName=${username.value}`, {
-          method: 'POST'
-        });
-        const status = resp.status;
-        if (status === 200) {
-          alert("Room created!");
+
+        if (choosen_deck.value == '__none__') {
+          Swal.fire({
+            title: 'App message',
+            html: 'You need to select a <strong>deck</strong> to start hosting...'
+          });
+
+          return;
         }
+
+        socket.socket.emit('host_room', {username: username.value});
       }
 
       const refresh = async () => {
-        const resp = await fetch('http://127.0.0.1:3000/rooms/get_all');
+        const resp = await fetch('http://127.0.0.1:3000/rooms/getAll');
         const status = resp.status;
 
         if (status === 200) {
           const r = await resp.json();
           console.log(r)
-          rooms.value = r;
+          rooms.value = r.rooms;
         }
+      }
+
+      const selectRoom = (idx) => {
+        choosen_room.value.id = idx;
+        choosen_room.value.name = rooms.value[idx];
       }
 
       onMounted(() => {
         deck_list.value = JSON.parse(localStorage.getItem('BSS_Decklist') || '[]');
+        socket = new socketCreator(deck_list.value, store, router);
+        store.commit('setSocket', socket);
       });
 
-      return {username, choosen_deck, deck_list, rooms, host, refresh, join};
+      watch(choosen_deck, (oldDeck, newDeck) => {
+        console.log("Chosen deck changed");
+        socket.setDeck(choosen_deck.value);
+      })
+
+      return {username, choosen_deck, deck_list, rooms, choosen_room, selectRoom, host, refresh, join};
     }
 }
 </script>
@@ -126,7 +162,15 @@ export default {
 }
 
 .avaliable_rooms_container > ul > li:hover {
-  background-color: rgb(192, 192, 192);
+  background-color: rgb(202, 204, 207);
+  box-shadow: 2px 2px 4px rgb(32, 88, 126);
+  font-weight: 700;
+}
+
+.avaliable_rooms_container > ul > li.choosen {
+  background-color: rgb(106, 145, 197);
+  color: white;
+  font-weight: 700;
 }
 
 .buttons {

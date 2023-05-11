@@ -1,5 +1,6 @@
 import { createStore } from 'vuex';
 import createCard from '@/classes';
+import { createCode } from '@/helpers';
 
 export default createStore({
   state: {
@@ -17,10 +18,25 @@ export default createStore({
       in_rust: {}
     },
     oponents_hand: 0,
-    current_card: ""
+    current_card: "",
+    socket: {},
+    op_id: ''
   },
   getters: {},
   mutations: {
+    setOpId(state, payload) {
+      state.op_id = payload;
+    },
+
+    setSocket(state, payload) {
+      if (!payload) {
+        alert("Socket not found...");
+        return;
+      }
+
+      state.socket = payload;
+    },
+
     setCurrentCard(state, payload) {
       state.current_card = payload
     },
@@ -30,19 +46,36 @@ export default createStore({
       const content = content_str.substring(1, content_str.length - 1).split(',');
 
       state.chosen_deck = payload;
-      state.cards.in_deck = content.map((card, idx) => {
-        return createCard(card + idx, `https://battlespirits-saga.com/images/cards/card/${card}.png`);
+      state.cards.in_deck = content.map((card) => {
+        const card_id = createCode(9);
+        return createCard(card_id, `https://battlespirits-saga.com/images/cards/card/${card}.png`);
       });
-      console.log(state.cards.in_deck);
+      state.cards.in_deck[0].restUnrest();
+      console.log(state.cards.in_deck[0]);
     },
 
     drawCard(state, payload) {
       const card = state.cards.in_deck.shift();
-      console.log(card);
       state.cards.in_hand.push(card);
     }
   },
   actions: {
+    restUnrest({state}, payload) {
+      const { card_id, place } = payload;
+
+      const card = state.cards[place].find(el => el.id == card_id);
+      console.log(card);
+      card.restUnrest();
+    },
+
+    placeCard({state}, payload) {
+      const destiny = payload.destiny;
+      const { id, url, seted, rested } = payload.card_class;
+      const card = createCard(id, url, seted, rested);
+
+      state.cards[destiny].push(card);
+    },
+
     moveCard({commit, state}, payload) {
       const origin = payload.origin;
       const destiny = payload.destiny;
@@ -65,10 +98,9 @@ export default createStore({
       }
 
       const card = state.cards[origin].splice(card_index, 1);
-      console.log(card[0]);
 
       state.cards[destiny].push(card[0]);
-      console.log(state.cards);
+      state.socket.sendSummonCard(destiny + '_op', card[0], state.op_id);
     },
 
     returnToDeck({state}, payload) {
@@ -88,7 +120,6 @@ export default createStore({
       }
 
       const card = state.cards[origin].splice(card_index, 1);
-      console.log(card[0]);
       if (top) {
         state.cards.in_deck.splice(0, 0, card[0]);
       } else {

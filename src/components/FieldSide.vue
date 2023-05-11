@@ -128,10 +128,6 @@ export default {
   align-items: center;
 }
 
-.trash_zone > div {
-  background-color: rgb(43, 148, 43);
-}
-
 .trash_cards_zone {
   width: 50px;
   height: 70px;
@@ -143,7 +139,6 @@ export default {
 }
 
 .deck_zone {
-  background-color: rgb(43, 148, 43);
   width: 90% !important;
   height: 32% !important;
   max-width: 90% !important;
@@ -162,13 +157,12 @@ export default {
   padding: 27px 2px;
 }
 .life_zone, .reserve_zone {
-  background-color: rgb(43, 148, 43);
+
   width: 65%;
   height: 21%;
 }
 
 .burst_zone {
-  background-color: rgb(43, 148, 43);
   width: 65%;
   height: 36%;
 }
