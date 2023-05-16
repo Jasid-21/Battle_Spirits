@@ -1,26 +1,24 @@
 <template>
   <div class="masterContainer" :class="{oponents_side: !own}">
+    <Hand :own="own" />
     <div class="side_zone left_zone">
       <div class="life_zone"></div>
       <div class="burst_zone"></div>
       <div class="reserve_zone"></div>
     </div>
     <div class="battle_zone">
-      <BattleRow :origin="'in_front'" :own="own" v-if="own" />
-      <BattleRow :origin="'in_front_op'" :own="own" v-else />
-      <BattleRow :origin="'in_middle'" :own="own" v-if="own" />
-      <BattleRow :origin="'in_middle_op'" :own="own" v-else />
-      <BattleRow :origin="'in_back'" :own="own" v-if="own" />
-      <BattleRow :origin="'in_back_op'" :own="own" v-else />
+      <BattleRow :origin="'in_front'" :own="own" />
+      <BattleRow :origin="'in_middle'" :own="own" />
+      <BattleRow :origin="'in_back'" :own="own" />
     </div>
     <div class="side_zone right_zone">
       <div>
-        <div class="deck_zone" @dblclick="drawCard"
-        @drop="dropInDeck($event)" @dragenter.prevent @dragover.prevent>
-          <img src="../assets/cards/bss_reverse.jpg" class="back_card">
-        </div>
+        <Deck :own="own" />
         <div class="trash_zone">
-          <div class="trash_cards_zone"></div>
+          <div class="trash_cards_zone" data-origin="in_trash" :data-own="own"
+          @drop="dropInTrash($event)" @dragenter.prevent @dragover.prevent>
+            <img class="trash_card_img" :src="last_card_in_trash.url" v-if="last_card_in_trash">
+          </div>
           <div class="trash_cores_zone"></div>
         </div>
       </div>
@@ -31,6 +29,8 @@
 <script>
 import Card from './Card.vue';
 import BattleRow from './BattleRow.vue';
+import Deck from './Deck.vue';
+import Hand from './Hand.vue';
 
 import { useStore } from 'vuex';
 import { computed, onMounted, ref } from 'vue';
@@ -41,56 +41,59 @@ export default {
     props: ['own'],
     components: {
       Card,
-      BattleRow
+      BattleRow,
+      Deck,
+      Hand
     },
     setup(props) {
       const store = useStore();
-      const cards_in_deck = computed(() => store.state.cards_in_deck);
+      const socket = store.state.socket;
+      const op_id = store.state.op_id;
 
-      const drawCard = () => {
-        if (!props.own) {
-          alert("You're unauthorized to draw cards from oponents deck...");
-          return;
-        }
-        store.commit('drawCard');
-      }
+      const last_card_in_trash = computed(() => {
+        const cards = store.state.cards[props.own?socket.socket.id:op_id].in_trash;
+        return cards.length > 0?cards[cards.length - 1]:undefined;
+      });
 
-      const dropInDeck = (ev) => {
+      const dropInTrash = (ev) => {
         if (!props.own) {
-          alert("You are unauthorized to drop cards into your oponents deck...");
+          alert("You are unauthorized to drop cards into your oponents trash...");
           return;
         }
 
         const origin = ev.dataTransfer.getData('card_origin');
         const card_id = ev.dataTransfer.getData('card_id');
+        const card_str = ev.dataTransfer.getData('card_obj');
+        const card = card_str?JSON.parse(card_str):undefined;
 
-        Swal.fire({
-          title: "Sending card to deck",
-          text: "Where do you want to send the card to",
-          confirmButtonText: "Top",
-          cancelButtonText: "Bottom",
-          showCancelButton: true,
-          focusConfirm: false
-        }).then(result => {
-          const top = result.isConfirmed;
-          store.dispatch('returnToDeck', {origin, card_id, top});
-        });
+        const params = {
+          origin, destiny: 'in_trash', card,
+          player_dest: props.own?socket.socket.id:op_id,
+          player_org: socket.socket.id, card_id, op_id
+        }
+
+        store.dispatch('moveCard', params)
+        .then(moved => {
+          if (!moved) {
+            console.log("Something went wrong moving the card to trash...");
+            return;
+          }
+
+          socket.socket.emit('move_card', params);
+        })
       }
 
-      onMounted(() => {
-        store.dispatch('shuffleDeck');
-      })
-
-      return {cards_in_deck, drawCard, dropInDeck};
+      return {last_card_in_trash, dropInTrash};
     }
 }
 </script>
 
 <style scoped>
-.back_card {
+.trash_card_img {
   max-width: 100% !important;
   max-height: 100% !important;
 }
+
 .side_zone {
   display: flex;
   flex-direction: column;
@@ -136,19 +139,6 @@ export default {
 .trash_cores_zone {
   width: 50px;
   height: 35px;
-}
-
-.deck_zone {
-  width: 90% !important;
-  height: 32% !important;
-  max-width: 90% !important;
-  max-height: 32% !important;
-  margin-top: 8%;
-
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-end;
-  align-items: center;
 }
 
 .left_zone {

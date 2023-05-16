@@ -3,8 +3,9 @@
     :class="{rested: cardObj.rested}" ref="card"
     @dragstart.stop="drag($event)"
     @dblclick="restUnrest"
+    @click="revealOptions($event)"
     :style="{'margin-left': (marginLeft || 15) + 'px'}">
-        <img :src="cardObj.url" @mouseenter="setAsCurrent" v-if="cardObj.url || !cardObj.seted" />
+        <img :src="cardObj.url" @mouseenter="setAsCurrent" v-if="cardObj.url && !cardObj.seted" />
         <img src="../assets/cards/bss_reverse.jpg" @mouseenter="setAsCurrent" v-else>
     </div>
 </template>
@@ -22,6 +23,9 @@ export default {
     setup(props) {
         const store = useStore();
 
+        const socket = store.state.socket;
+        const op_id = store.state.op_id;
+
         const marginLeft = computed(() => props.margin_left);
         const cardObj = computed(() => {
             console.log(props.card);
@@ -30,7 +34,16 @@ export default {
         const card = ref(null);
 
 
+        const revealOptions = (ev) => {
+            console.log(ev.pageX);
+        }
+
         const setAsCurrent = () => {
+            const parent = card.value.parentElement;
+            if (!JSON.parse(parent.getAttribute('data-own')) && cardObj.value.seted) {
+                return;
+            }
+
             store.commit('setCurrentCard', cardObj.value.url);
         }
 
@@ -43,8 +56,15 @@ export default {
 
             ev.dataTransfer.dropEffect = 'move';
             ev.dataTransfer.effectAllowed = 'move';
-            ev.dataTransfer.setData('card_origin', parent.getAttribute('data-origin'));
+
+            const origin = parent.getAttribute('data-origin');
+            ev.dataTransfer.setData('card_origin', origin);
             ev.dataTransfer.setData('card_id', cardObj.value.id);
+
+            if (origin == 'in_deck') {
+                const card = JSON.stringify({...cardObj.value});
+                ev.dataTransfer.setData('card_obj', card);
+            }
         }
 
         const restUnrest = () => {
@@ -54,12 +74,14 @@ export default {
                 return;
             }
             cardObj.value.rested = !cardObj.value.rested;
-            const socket = store.state.socket;
-            const op_id = store.state.op_id;
-            socket.sendRestUnrest(cardObj.value.id, parent.getAttribute('data-origin') + '_op', op_id);
+            socket.socket.emit('rest_unrest', {
+                card_id: cardObj.value.id, 
+                place: parent.getAttribute('data-origin'),
+                op_id
+            });
         }
 
-        return {marginLeft, cardObj, setAsCurrent, drag, restUnrest, card};
+        return {marginLeft, cardObj, setAsCurrent, drag, restUnrest, revealOptions, card};
     }
 }
 </script>

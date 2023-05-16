@@ -55,7 +55,7 @@ export default {
       const username = ref('Sefirot');
       const choosen_deck = ref('__none__');
       const rooms = ref([]);
-      const choosen_room = ref({name: '', id: -1});
+      const choosen_room = ref({name: '', id: -1, board_id: ''});
 
       const join = () => {
         if (choosen_deck.value == '__none__') {
@@ -76,7 +76,10 @@ export default {
           return;
         } 
 
-        socket.socket.emit('start_duel', {username: choosen_room.value.name});
+        socket.socket.emit('start_duel', {
+          board_name: choosen_room.value.name,
+          deckString: deck_list.value.find(d => d.name == choosen_deck.value).deck
+        });
       }
 
       const host = async () => {
@@ -96,8 +99,9 @@ export default {
 
           return;
         }
+        const deck = deck_list.value.find(d => d.name == choosen_deck.value).deck;
 
-        socket.socket.emit('host_room', {username: username.value});
+        socket.socket.emit('host_room', {username: username.value, deck});
       }
 
       const refresh = async () => {

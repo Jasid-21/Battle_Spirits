@@ -5,11 +5,8 @@
         </div>
         <div class="game_section_container">
             <div class="playable">
-                <div class="hand oponents_hand" data-own="false"></div>
+                <CardListDisplayer />
                 <TabletopVue />
-                <div class="hand myhand" data-origin="in_hand" data-own="true">
-                    <Card v-for="c of cards_in_hand" :key="c.id" :card="c" />
-                </div>
             </div>
             <div class="phases_and_options">
                 <div class="phases">
@@ -24,23 +21,28 @@
 import CurrentCard from '@/components/CurrentCard.vue';
 import TabletopVue from '../components/Tabletop.vue';
 import Card from '@/components/Card.vue';
+import CardListDisplayer from '@/components/CardListDisplayer.vue';
 
-import { computed, onMounted, ref } from 'vue';
+import { computed, nextTick, onMounted, ref } from 'vue';
 import { useStore } from 'vuex';
+import { createCard } from '@/helpers';
 export default {
     name: 'GameRoom',
     components: {
         CurrentCard,
         TabletopVue,
-        Card
+        Card,
+        CardListDisplayer
     },
 
     setup() {
         const phases = ['Start', 'Core', 'Draw', 'Refresh', 'Main', 'Attack', 'End'];
-        const store = useStore();
-        const cards_in_hand = computed(() => store.state.cards.in_hand);
 
-        return {phases, cards_in_hand};
+        const store = useStore();
+        const socket = store.state.socket;
+        const op_id = store.state.op_id;
+
+        return {phases};
     }
 }
 </script>
@@ -51,42 +53,6 @@ export default {
     display: flex;
     justify-content: center;
     align-items: center;
-}
-
-.hand {
-    position: absolute;
-    width: 650px;
-    height: 76px;
-    background: rgba(255, 255, 255, 0.2);
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.myhand {
-    bottom: 0px;
-    left: 0px;
-
-    overflow: auto;
-}
-
-.myhand::-webkit-scrollbar,
-.myhand::-webkit-scrollbar-track {
-    height: 5px;
-    background-color: transparent;
-}
-
-.myhand::-webkit-scrollbar-thumb {
-    width: 5px;
-    background-color: rgb(0, 0, 83);
-    border-radius: 5px;
-}
-
-.oponents_hand {
-    top: 0px;
-    right: 0px;
-    z-index: 10;
 }
 
 .masterContainer {

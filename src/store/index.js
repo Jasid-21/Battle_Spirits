@@ -1,31 +1,41 @@
 import { createStore } from 'vuex';
-import createCard from '@/classes';
 import { createCode } from '@/helpers';
+
+const cards_obj = {
+  in_deck: [], in_hand: [], in_front: [],
+  in_middle: [], in_back: [], in_trash: [],
+  in_rust: {}
+};
+const cards_obj_2 = {
+  in_deck: [], in_hand: [], in_front: [],
+  in_middle: [], in_back: [], in_trash: [],
+  in_rust: {}
+};
 
 export default createStore({
   state: {
     chosen_deck: {},
-    cards: {
-      in_deck: [],
-      in_hand: [],
-      in_front: [],
-      in_middle: [],
-      in_back: [],
-      in_front_op: [],
-      in_middle_op: [],
-      in_back_op: [],
-      in_transh: [],
-      in_rust: {}
-    },
-    oponents_hand: 0,
+    cards: {},
     current_card: "",
     socket: {},
-    op_id: ''
+    op_id: '',
+    board_id: '',
+    cardDisplayer: true
   },
   getters: {},
   mutations: {
-    setOpId(state, payload) {
-      state.op_id = payload;
+    changeDisplayerStatus(state, payload) {
+      if (!payload) {
+        state.cardDisplayer = !state.cardDisplayer;
+        return;
+      }
+
+      state.cardDisplayer = payload;
+    },
+
+    setBoardId(state, payload) {
+      console.log(payload);
+      state.board_id = payload;
     },
 
     setSocket(state, payload) {
@@ -42,101 +52,90 @@ export default createStore({
     },
 
     setChoosenDeck(state, payload) {
-      const content_str = payload.deck;
-      const content = content_str.substring(1, content_str.length - 1).split(',');
-
-      state.chosen_deck = payload;
-      state.cards.in_deck = content.map((card) => {
-        const card_id = createCode(9);
-        return createCard(card_id, `https://battlespirits-saga.com/images/cards/card/${card}.png`);
+      state.cards[state.socket.socket.id].in_deck = payload;
+      state.cards[state.op_id].in_deck = 40;
+      
+      state.cards[state.socket.socket.id].in_deck.forEach(card => {
+        const img = new Image();
+        img.src = card.url;
+        img.onload = async () => {
+          console.log("Done");
+        }
       });
-      state.cards.in_deck[0].restUnrest();
-      console.log(state.cards.in_deck[0]);
     },
 
-    drawCard(state, payload) {
-      const card = state.cards.in_deck.shift();
-      state.cards.in_hand.push(card);
+    restUnrest(state, payload) {
+      const { card_id, place } = payload;
+      const card = state.cards[state.op_id][place].find(c => c.id == card_id);
+      card.rested = !card.rested;
+    },
+
+    setAllHand(state, payload) {
+      console.log(state.cards[payload].in_hand);
+      state.cards[payload].in_hand.forEach(card => card.seted = true);
     }
   },
   actions: {
-    restUnrest({state}, payload) {
-      const { card_id, place } = payload;
-
-      const card = state.cards[place].find(el => el.id == card_id);
-      console.log(card);
-      card.restUnrest();
-    },
-
-    placeCard({state}, payload) {
-      const destiny = payload.destiny;
-      const { id, url, seted, rested } = payload.card_class;
-      const card = createCard(id, url, seted, rested);
-
-      state.cards[destiny].push(card);
-    },
-
-    moveCard({commit, state}, payload) {
-      const origin = payload.origin;
-      const destiny = payload.destiny;
-      const card_id = payload.card_id;
-
-      if (!origin || !(origin in state.cards)) {
-        alert("Card origin not found: " + origin);
-        return;
-      }
-
-      if (!destiny || !(destiny in state.cards)) {
-        alert("Card destiny not found: " + destiny);
-        return;
-      }
-
-      const card_index = state.cards[origin].findIndex(el => el.id == card_id);
-      if (card_index == -1) {
-        alert("Card not found in origin...");
-        return;
-      }
-
-      const card = state.cards[origin].splice(card_index, 1);
-
-      state.cards[destiny].push(card[0]);
-      state.socket.sendSummonCard(destiny + '_op', card[0], state.op_id);
-    },
-
     returnToDeck({state}, payload) {
-      const card_id = payload.card_id;
-      const origin = payload.origin;
-      const top = payload.top;
+      const { origin, player_org, top, card_id } = payload;
+      const card_idx = state.cards[player_org][origin].findIndex(c => c.id == card_id);
+      const card = state.cards[player_org][origin].splice(card_idx, 1)[0];
 
-      if (!origin || !(origin in state.cards)) {
-        alert("Card origin not found: " + origin);
+      if (player_org != state.socket.socket.id) {
+        console.log(player_org + ', ', state.socket.socket.id);
         return;
       }
 
-      const card_index = state.cards[origin].findIndex(el => el.id == card_id);
-      if (card_index == -1) {
-        alert("Card not found in origin...");
-        return;
-      }
-
-      const card = state.cards[origin].splice(card_index, 1);
       if (top) {
-        state.cards.in_deck.splice(0, 0, card[0]);
-      } else {
-        state.cards.in_deck.push(card[0]);
+        state.cards[player_org].in_deck.splice(0, 0, card);
+        return;
       }
+
+      state.cards[player_org].in_deck.push(card);
     },
 
-    shuffleDeck({state}) {
-      const array = state.cards.in_deck;
-      for (var i = array.length - 1; i > 0; i--) {
-        var j = Math.floor(Math.random() * (i + 1));
-        var temp = array[i];
-        array[i] = array[j];
-        array[j] = temp;
+    drawCard({state}, {card, socket_id}) {
+      console.log(card);
+      if (!card) {
+        card = state.cards[socket_id].in_deck.shift();
       }
 
-      state.cards.in_deck = array;
+      state.cards[socket_id].in_hand.push(card);
+      console.log(card);
+      return card;
+    },
+
+    moveCard({state}, payload) {
+      const { origin, destiny, player_dest, player_org, card_id, card } = payload;
+      console.log(payload);
+      var newCard = card;
+      if (player_org != state.op_id || origin != 'in_deck') {
+        const card_index = state.cards[player_org][origin].findIndex(el => el.id == card_id);
+        if (card_index == -1) {
+          alert("Card not found in origin...");
+          return false;
+        }
+
+        console.log(state.cards[player_org][origin]);
+
+        newCard = state.cards[player_org][origin].splice(card_index, 1)[0];
+      }
+
+      newCard.seted = false;
+      console.log(newCard);
+
+      state.cards[player_dest][destiny].push(newCard);
+      console.log(state.cards[player_dest][destiny]);
+
+      return true;
+    },
+
+    addPlayers({state}, payload) {
+      state.cards[state.socket.socket.id] = Object.assign({}, cards_obj);
+      state.cards[payload] = Object.assign({}, cards_obj_2);
+      state.op_id = payload;
+
+      console.log(Object.keys(state.cards));
     }
   },
   modules: {

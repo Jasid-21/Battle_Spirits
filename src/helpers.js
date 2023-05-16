@@ -11,6 +11,26 @@ export function createCode(num) {
     return code;
 }
 
+class Card {
+    constructor(id, url, seted = false, rested = false) {
+        this.id = id;
+        this.url = url;
+        this.seted = seted;
+        this.rested = rested;
+    }
+
+    restUnrest() {
+        this.rested = !this.rested;
+    }
+
+    setReveal() {
+        this.seted = !this.seted;
+    }
+}
+
+export function createCard(id, url, seted = false, rested = false) {
+    return new Card(id, url, seted, rested);
+}
 
 export class socketCreator {
     constructor (deck_list, store, router) {
@@ -20,49 +40,40 @@ export class socketCreator {
         this.socket = new io('http://127.0.0.1:3000');
 
         this.socket.on('connect', () => {
-            console.log("Connectd...");
+            console.log("Connectd: ", this.socket.id);
         });
 
-        this.socket.on('duel_start', (info) => {
-            // Storing deck.
-            store.commit('setChoosenDeck', this.chosen_deck);
-    
-            // Storing oponents socket id.
-            const op_id = info.op_id;
-            store.commit('setOpId', op_id);
-    
-            // Entering to the game.
+        this.socket.on('duel_start', ({ op_id, deck }) => {
+            this.store.dispatch('addPlayers', op_id);
+            this.store.commit('setChoosenDeck', deck);
             router.push('/game');
         });
 
         this.socket.on('socket_message', (msg) => {
-            Swal.fire({
-            title: 'Socket server message',
-            text: msg.msg
-            });
+            alert(msg.msg);
         });
 
-        this.socket.on('summon_card', (info) => {
-            const card_class = info.card_class;
-            const place = info.place;
-
-            store.dispatch('placeCard', {destiny: place, card_class});
+        this.socket.on('draw_card', ({card, op_id}) => {
+            store.dispatch('drawCard', {card, socket_id: op_id});
         });
 
-        this.socket.on('rest_unrest', ({card_id, place}) => {
-            store.dispatch('restUnrest', {card_id, place});
+        this.socket.on('move_card', info => {
+            if (info.card) {
+                info.card = createCard(info.card.id, info.card.url);
+            }
+            this.store.dispatch('moveCard', info);
+        });
+
+        this.socket.on('return_to_deck', info => {
+            this.store.dispatch('returnToDeck', info);
+        });
+
+        this.socket.on('rest_unrest', info => {
+            this.store.commit('restUnrest', info);
         });
     }
 
     setDeck(choosen_deck) {
         this.chosen_deck = this.deck_list.find(d => d.name == choosen_deck);
-    }
-
-    sendSummonCard(place, card_class, op_id) {
-        this.socket.emit('summon_card', {place, card_class, op_id});
-    }
-
-    sendRestUnrest(card_id, place, op_id) {
-        this.socket.emit('rest_unrest', {card_id, place, op_id});
     }
 }
