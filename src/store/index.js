@@ -20,17 +20,23 @@ export default createStore({
     socket: {},
     op_id: '',
     board_id: '',
-    cardDisplayer: true
+    cardDisplayer: {
+      showing: true,
+      origin: 'in_deck'
+    }
   },
   getters: {},
   mutations: {
     changeDisplayerStatus(state, payload) {
-      if (!payload) {
-        state.cardDisplayer = !state.cardDisplayer;
+      const {status, origin} = payload;
+      if (!status) {
+        state.cardDisplayer.showing = !state.cardDisplayer.showing;
         return;
       }
 
-      state.cardDisplayer = payload;
+      state.cardDisplayer.showing = status;
+      state.cardDisplayer.origin = origin;
+
     },
 
     setBoardId(state, payload) {

@@ -72,7 +72,7 @@ export default {
         }
 
         const showDeck = () => {
-            store.commit('changeDisplayerStatus');
+            store.commit('changeDisplayerStatus', {origin: 'in_deck', status: true});
         }
 
         return {drawCard, dropInDeck, showDeck};

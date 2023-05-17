@@ -15,7 +15,7 @@
       <div>
         <Deck :own="own" />
         <div class="trash_zone">
-          <div class="trash_cards_zone" data-origin="in_trash" :data-own="own"
+          <div class="trash_cards_zone" @click="showTrash" data-origin="in_trash" :data-own="own"
           @drop="dropInTrash($event)" @dragenter.prevent @dragover.prevent>
             <img class="trash_card_img" :src="last_card_in_trash.url" v-if="last_card_in_trash">
           </div>
@@ -55,6 +55,10 @@ export default {
         return cards.length > 0?cards[cards.length - 1]:undefined;
       });
 
+      const showTrash = () => {
+        store.commit('changeDisplayerStatus', {origin: 'in_trash', status: true});
+      }
+
       const dropInTrash = (ev) => {
         if (!props.own) {
           alert("You are unauthorized to drop cards into your oponents trash...");
@@ -83,7 +87,7 @@ export default {
         })
       }
 
-      return {last_card_in_trash, dropInTrash};
+      return {last_card_in_trash, dropInTrash, showTrash};
     }
 }
 </script>

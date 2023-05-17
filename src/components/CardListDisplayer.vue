@@ -3,8 +3,8 @@
         <button class="close_button" @click.prevent="hide">
             <fai icon="xmark" />
         </button>
-        <div class="cardDisplayer" data-own="true" data-origin="in_deck">
-            <Card :card="c" v-for="(c, idx) of deck" :key="idx" />
+        <div class="cardDisplayer" data-own="true" :data-origin="origin">
+            <Card :card="c" v-for="(c, idx) of cards" :key="idx" />
         </div>
     </div>
 </template>
@@ -22,14 +22,15 @@ export default {
     setup() {
         const store = useStore();
         const socket = store.state.socket;
-        const deck = computed(() => store.state.cards[socket.socket.id].in_deck);
-        const show = computed(() => store.state.cardDisplayer);
+        const origin = computed(() => store.state.cardDisplayer.origin);
+        const cards = computed(() => store.state.cards[socket.socket.id][origin.value]);
+        const show = computed(() => store.state.cardDisplayer.showing);
 
         const hide = () => {
-            store.commit('changeDisplayerStatus');
+            store.commit('changeDisplayerStatus', {origin: origin.value, status: false});
         }
 
-        return { deck, show, hide };
+        return { cards, show, origin, hide };
     }
 }
 </script>
