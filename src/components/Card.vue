@@ -4,21 +4,23 @@
     @dragstart.stop="drag($event)"
     @dblclick="restUnrest"
     @click="revealOptions($event)"
-    :style="{'margin-left': (marginLeft || 15) + 'px'}">
+    :style="{'margin-left': marginLeft + 'px'}">
         <img :src="cardObj.url" @mouseenter="setAsCurrent" v-if="cardObj.url && !cardObj.seted" />
         <img src="../assets/cards/bss_reverse.jpg" @mouseenter="setAsCurrent" v-else>
     </div>
 </template>
 
 <script>
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useStore } from 'vuex';
 
 export default {
     name: 'Card',
     props: {
-        margin_left: {type: Number},
-        card: {default: {id: '', url: '', seted: false, rested: false}}
+        margin_left: {type: Number, default: 15},
+        card: {default: {id: '', url: '', seted: false, rested: false}},
+        setedDef: {default: false, type: Boolean},
+        restedDef: {default: false, type: Boolean}
     },
     setup(props) {
         const store = useStore();
@@ -27,10 +29,9 @@ export default {
         const op_id = store.state.op_id;
 
         const marginLeft = computed(() => props.margin_left);
-        const cardObj = computed(() => {
-            console.log(props.card);
-            return props.card;
-        });
+        const cardObj = computed(() => props.card);
+        const setedDef = props.setedDef;
+        const restedDef = props.restedDef;
         const card = ref(null);
 
 
@@ -80,6 +81,11 @@ export default {
                 op_id
             });
         }
+
+        onMounted(() => {
+            cardObj.value.seted = setedDef;
+            cardObj.value.rested = restedDef;
+        })
 
         return {marginLeft, cardObj, setAsCurrent, drag, restUnrest, revealOptions, card};
     }

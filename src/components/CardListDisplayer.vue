@@ -10,7 +10,7 @@
 </template>
 
 <script>
-import { computed } from 'vue';
+import { computed, watch } from 'vue';
 import { useStore } from 'vuex'
 import Card from './Card.vue';
 
@@ -22,12 +22,29 @@ export default {
     setup() {
         const store = useStore();
         const socket = store.state.socket;
+        const op_id = store.state.op_id;
         const origin = computed(() => store.state.cardDisplayer.origin);
-        const cards = computed(() => store.state.cards[socket.socket.id][origin.value]);
+        const player = computed(() => store.state.cardDisplayer.player);
+        const cards = computed(() => {
+            const playerCards = store.state.cards[player.value];
+            if (!playerCards) {
+                return [];
+            }
+            const inOriginCards = playerCards[origin.value];
+            return inOriginCards;
+        });
         const show = computed(() => store.state.cardDisplayer.showing);
 
         const hide = () => {
             store.commit('changeDisplayerStatus', {origin: origin.value, status: false});
+
+            const params = {
+                player: socket.socket.id,
+                op_id,
+                origin: null
+            }
+            store.commit('lookingSomething', params);
+            socket.socket.emit('looking_something', params);
         }
 
         return { cards, show, origin, hide };
@@ -59,11 +76,12 @@ export default {
     padding: 20px 0px;
 
     display: flex;
-    overflow-x: scroll;
+    overflow-x: auto;
 }
 .cardListDisplayer {
     width: 100%;
     height: min-content;
+    min-height: 100px;
 
     background-color: rgba(255, 255, 255, 0.7);
     border: 3px solid gray;
@@ -80,6 +98,7 @@ export default {
 }
 
 .cardDisplayer::-webkit-scrollbar {
+    bottom: 0px;
     height: 10px;
     background-color: transparent;
 }

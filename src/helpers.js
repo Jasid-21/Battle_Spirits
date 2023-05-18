@@ -1,6 +1,69 @@
 import { io } from "socket.io-client";
 import { Swal } from 'sweetalert2';
 
+export function createCardsObject(own, num = 0) {
+    return {
+        in_deck: own?[]:num, in_hand: [], in_front: [],
+        in_middle: [], in_back: [], in_trash: [],
+        in_burst: {}
+    }
+};
+
+class Cores {
+    constructor() {
+        this.in_reserve = {
+            commons: 3,
+            soul: 1
+        }
+
+        this.in_trash = {
+            commons: 0,
+            soul: 0
+        }
+    }
+
+    incrementReserve(soul = false) {
+        this.in_reserve[soul?'soul':'commons']++;
+    }
+
+    decreaseReserve(soul = false) {
+        if (this.in_reserve[soul?'soul':'commons'] <= 0) {
+            return false;
+        }
+
+        this.in_reserve[soul?'soul':'commons']--;
+        return true;
+    }
+
+    incrementTrash(soul = false) {
+        this.in_reserve[soul?'soul':'commons']++;
+    }
+
+    decreaseTrash(soul = false) {
+        if (this.in_reserve[soul?'soul':'commons'] <= 0) {
+            return false;
+        }
+
+        this.in_reserve[soul?'soul':'commons']--;
+        return true;
+    }
+}
+
+export function createCoresObject() {
+    return new Cores();
+}
+
+export function shuffleArray(array) {
+    for (var i = array.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var temp = array[i];
+        array[i] = array[j];
+        array[j] = temp;
+    }
+
+    return array;
+}
+
 export function createCode(num) {
     const lower = 'abcdefghijklmnopqrstuvwxyz'; const upper = lower.toUpperCase();
     const numbers = '0123456789';               const total = lower + upper + numbers;
@@ -70,6 +133,14 @@ export class socketCreator {
 
         this.socket.on('rest_unrest', info => {
             this.store.commit('restUnrest', info);
+        });
+
+        this.socket.on('looking_something', info => {
+            this.store.commit('lookingSomething', info);
+        });
+
+        this.socket.on('flip_burst_card', info => {
+            this.store.commit('flipBurstCard', info);
         });
     }
 

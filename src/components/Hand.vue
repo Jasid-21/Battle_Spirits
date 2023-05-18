@@ -1,7 +1,7 @@
 <template>
     <div class="hand myhand" data-origin="in_hand" :data-own="own"
         @dragenter.prevent @dragover.prevent @drop="drop($event)">
-        <Card v-for="c of cards" :key="c.id" :card="c" />
+        <Card v-for="c of cards" :key="c.id" :card="c" :setedDef="!own" />
     </div>
 </template>
 
@@ -82,6 +82,8 @@ export default {
     display: flex;
     align-items: center;
     justify-content: center;
+
+    z-index: 30;
 }
 
 .myhand::-webkit-scrollbar,
