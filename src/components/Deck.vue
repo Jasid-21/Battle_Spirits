@@ -50,10 +50,7 @@ export default {
         }
 
         const drawCard = () => {
-            if (!props.own) {
-            alert("You're unauthorized to draw cards from oponents deck...");
-            return;
-            }
+            if (!own) { return; }
             
             store.dispatch('drawCard', {socket_id: socket.socket.id})
             .then(card => socket.socket.emit('draw_card', {op_id, card}))

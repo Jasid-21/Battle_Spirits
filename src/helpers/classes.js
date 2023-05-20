@@ -1,50 +1,6 @@
 import { io } from "socket.io-client";
-import { Swal } from 'sweetalert2';
 
-export function createCardsObject(own, num = 0) {
-    return {
-        in_deck: own?[]:num, in_hand: [], in_front: [],
-        in_middle: [], in_back: [], in_trash: [],
-        in_burst: {}
-    }
-};
-
-export function createCoresObject() {
-    return {
-        in_trash: {
-            soul: 0,
-            commons: 0
-        },
-
-        in_reserve: {
-            commons: 3,
-            soul: 1
-        }
-    }
-}
-
-export function shuffleArray(array) {
-    for (var i = array.length - 1; i > 0; i--) {
-        var j = Math.floor(Math.random() * (i + 1));
-        var temp = array[i];
-        array[i] = array[j];
-        array[j] = temp;
-    }
-
-    return array;
-}
-
-export function createCode(num) {
-    const lower = 'abcdefghijklmnopqrstuvwxyz'; const upper = lower.toUpperCase();
-    const numbers = '0123456789';               const total = lower + upper + numbers;
-    var code = '';
-    for (var i = 0; i < num; i++) {
-        code += total[Math.floor(Math.random()*(total.length))];
-    }
-    return code;
-}
-
-class Card {
+export class Card {
     constructor(id, url, seted = false, rested = false) {
         this.id = id;
         this.url = url;
@@ -65,10 +21,6 @@ class Card {
     }
 }
 
-export function createCard(id, url, seted = false, rested = false) {
-    return new Card(id, url, seted, rested);
-}
-
 export class socketCreator {
     constructor (deck_list, store, router) {
         this.deck_list = deck_list;
@@ -80,9 +32,9 @@ export class socketCreator {
             console.log("Connectd: ", this.socket.id);
         });
 
-        this.socket.on('duel_start', ({ op_id, deck }) => {
+        this.socket.on('duel_start', ({ op_id, deck, op_deck }) => {
             this.store.dispatch('addPlayers', op_id);
-            this.store.commit('setChoosenDeck', deck);
+            this.store.commit('setChoosenDecks', { deck, op_deck });
             router.push('/game');
         });
 
