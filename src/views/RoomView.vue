@@ -32,17 +32,15 @@ export default {
         CurrentCard,
         TabletopVue,
         Card,
-        CardListDisplayer
+        CardListDisplayer,
     },
 
     setup() {
         const phases = ['Start', 'Core', 'Draw', 'Refresh', 'Main', 'Attack', 'End'];
 
         const store = useStore();
-        const socket = store.state.socket;
-        const op_id = store.state.op_id;
 
-        return {phases};
+        return { phases };
     }
 }
 </script>

@@ -9,48 +9,18 @@ export function createCardsObject(own, num = 0) {
     }
 };
 
-class Cores {
-    constructor() {
-        this.in_reserve = {
+export function createCoresObject() {
+    return {
+        in_trash: {
+            soul: 0,
+            commons: 0
+        },
+
+        in_reserve: {
             commons: 3,
             soul: 1
         }
-
-        this.in_trash = {
-            commons: 0,
-            soul: 0
-        }
     }
-
-    incrementReserve(soul = false) {
-        this.in_reserve[soul?'soul':'commons']++;
-    }
-
-    decreaseReserve(soul = false) {
-        if (this.in_reserve[soul?'soul':'commons'] <= 0) {
-            return false;
-        }
-
-        this.in_reserve[soul?'soul':'commons']--;
-        return true;
-    }
-
-    incrementTrash(soul = false) {
-        this.in_reserve[soul?'soul':'commons']++;
-    }
-
-    decreaseTrash(soul = false) {
-        if (this.in_reserve[soul?'soul':'commons'] <= 0) {
-            return false;
-        }
-
-        this.in_reserve[soul?'soul':'commons']--;
-        return true;
-    }
-}
-
-export function createCoresObject() {
-    return new Cores();
 }
 
 export function shuffleArray(array) {
@@ -80,6 +50,10 @@ class Card {
         this.url = url;
         this.seted = seted;
         this.rested = rested;
+        this.cores = {
+            commons: 0,
+            soul: 0
+        }
     }
 
     restUnrest() {
@@ -141,6 +115,14 @@ export class socketCreator {
 
         this.socket.on('flip_burst_card', info => {
             this.store.commit('flipBurstCard', info);
+        });
+
+        this.socket.on('move_cores', info => {
+            this.store.dispatch('moveCores', info);
+        });
+
+        this.socket.on('increment_cores', info => {
+            this.store.commit('incrementCores', info);
         });
     }
 

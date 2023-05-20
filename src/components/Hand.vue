@@ -1,7 +1,7 @@
 <template>
     <div class="hand myhand" data-origin="in_hand" :data-own="own"
         @dragenter.prevent @dragover.prevent @drop="drop($event)">
-        <Card v-for="c of cards" :key="c.id" :card="c" :setedDef="!own" />
+        <Card v-for="c of cards" :key="c.id" :card="c" />
     </div>
 </template>
 
@@ -40,7 +40,7 @@ export default {
 
             const params = { 
                 origin: card_origin, destiny: 'in_hand', 
-                player_dest, player_org, card_id, card
+                player_dest, player_org, card_id
             };
             console.log(params);
             store.dispatch('moveCard', params)
@@ -50,11 +50,12 @@ export default {
                     return;
                 }
 
-                socket.socket.emit('move_card', { ...params, op_id });
+                socket.socket.emit('move_card', { ...params, card, op_id });
             });
         }
 
         watch(cards.value, (oldVal, newVal) => {
+            console.log(cards.value);
             if (own) {
                 return;
             }

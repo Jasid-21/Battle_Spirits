@@ -1,8 +1,8 @@
 <template>
     <div class="row" ref="row" :data-origin="origin" :data-own="own"
     @drop="drop($event)" @dragenter.prevent @dragover.prevent>
-        <Card v-for="c of row_cards" 
-        :key="c.id" :margin_left="space" :card="c" />
+        <Card v-for="c of row_cards" :place="origin" 
+        :key="c.id" :margin_left="space" :card="c" :own="own" />
     </div>
 </template>
 

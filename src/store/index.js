@@ -7,6 +7,10 @@ export default createStore({
     chosen_deck: {},
     cards: {},
     cores: {},
+    coresCarrier: {
+      commons: 0,
+      soul: 0
+    },
     current_card: "",
     socket: {},
     op_id: '',
@@ -19,6 +23,25 @@ export default createStore({
   },
   getters: {},
   mutations: {
+    clearCarrier(state) {
+      state.coresCarrier.commons = 0;
+      state.coresCarrier.soul = 0;
+    },
+
+    incrementCores(state, payload) {
+      const { player_org, origin } = payload;
+      state.cores[player_org][origin].commons++
+    },
+
+    modifyCoresCarrier(state, { inc, soul }) {
+      if (inc) {
+        state.coresCarrier[soul?'soul':'commons']++;
+        return;
+      }
+
+      state.coresCarrier[soul?'soul':'commons']--;
+    },
+
     flipBurstCard(state, payload) {
       const { player_org } = payload;
       state.cards[player_org].in_burst.seted = !state.cards[player_org].in_burst.seted;
@@ -97,6 +120,47 @@ export default createStore({
     }
   },
   actions: {
+    moveCores({state, commit}, payload) {
+      const { player_org, player_dest, origin, destiny, 
+        card_id_org, card_id_dest, commons, soul } = payload;
+        console.log(payload);
+
+      if (!card_id_org) {
+        const c_prev = state.cores[player_org][origin].commons;
+        const s_prev = state.cores[player_org][origin].soul;
+
+        state.cores[player_org][origin].commons = c_prev - commons;
+        state.cores[player_org][origin].soul = s_prev - soul;
+
+      } else {
+        const card = state.cards[player_org][origin].find(c => c.id == card_id_org);
+        const c_prev = card.cores.commons;
+        const s_prev = card.cores.soul;
+
+        card.cores.commons = c_prev - commons;
+        card.cores.soul = s_prev - soul;
+      }
+      
+
+      if (!card_id_dest) {
+        const c_prev = state.cores[player_dest][destiny].commons;
+        const s_prev = state.cores[player_dest][destiny].soul;
+
+        state.cores[player_dest][destiny].commons = c_prev + commons;
+        state.cores[player_dest][destiny].soul = s_prev + soul;
+      } else {
+        const card = state.cards[player_dest][destiny].find(c => c.id == card_id_dest);
+        const c_prev = card.cores.commons;
+        const s_prev = card.cores.soul;
+
+        card.cores.commons = c_prev + commons;
+        card.cores.soul = s_prev + soul;
+      }
+
+      console.log(state.cores);
+      commit('clearCarrier');
+    },
+
     returnToDeck({state}, payload) {
       const { origin, player_org, top, card_id } = payload;
       const card_idx = state.cards[player_org][origin].findIndex(c => c.id == card_id);
@@ -148,7 +212,7 @@ export default createStore({
 
 
       // Taking the card from origin if origin is oponents deck.
-      var newCard;;
+      var newCard;
       if (card) {
         newCard = card;
         state.cards[state.op_id].in_deck--;

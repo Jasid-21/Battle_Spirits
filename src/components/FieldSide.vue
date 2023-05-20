@@ -4,7 +4,7 @@
     <div class="side_zone left_zone">
       <div class="life_zone"></div>
       <Burst :own="own" />
-      <div class="reserve_zone"></div>
+      <CoresReserve :own="own" :cores="coresObj" />
     </div>
     <div class="battle_zone">
       <BattleRow :origin="'in_front'" :own="own" />
@@ -16,7 +16,7 @@
         <Deck :own="own" />
         <div class="trash_zone">
           <TrashCards :own="own" />
-          <div class="trash_cores_zone"></div>
+          <CoresTrash :own="own" />
         </div>
       </div>
     </div>
@@ -30,23 +30,29 @@ import Deck from './Deck.vue';
 import Hand from './Hand.vue';
 import Trash from './Trash.vue';
 import Burst from './Burst.vue';
-import { ref } from 'vue';
+import CoresReserve from './CoresReserve.vue';
+import CoresTrash from './CoresTrash.vue';
+import { useStore } from 'vuex';
+import { computed } from 'vue';
 
 export default {
     name: "FieldSide",
     props: ['own'],
     components: {
-      Card,
-      BattleRow,
-      Deck,
-      TrashCards: Trash,
-      Hand,
-      Burst
+      Card, BattleRow,
+      Deck, TrashCards: Trash,
+      Hand, Burst, CoresReserve,
+      CoresTrash
     },
     setup(props) {
-      const cardInBurst = ref({});
+      const store = useStore();
+      const own = props.own;
 
-      return {cardInBurst};
+      const socket = store.state.socket;
+      const op_id = store.state.op_id;
+      const coresObj = computed(() => store.state.cores[own?socket.socket.id:op_id]);
+
+      return {coresObj};
     }
 }
 </script>
@@ -89,18 +95,12 @@ export default {
   align-items: center;
 }
 
-.trash_cores_zone {
-  width: 50px;
-  height: 35px;
-}
-
 .left_zone {
   align-items: flex-end;
   justify-content: space-between;
   padding: 27px 2px;
 }
 .life_zone, .reserve_zone {
-
   width: 65%;
   height: 21%;
 }

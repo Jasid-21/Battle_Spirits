@@ -3,40 +3,66 @@
     :class="{rested: cardObj.rested}" ref="card"
     @dragstart.stop="drag($event)"
     @dblclick="restUnrest"
-    @click="revealOptions($event)"
+    @drop.stop="drop($event)" @dragenter.prevent @dragover.prevent
     :style="{'margin-left': marginLeft + 'px'}">
         <img :src="cardObj.url" @mouseenter="setAsCurrent" v-if="cardObj.url && !cardObj.seted" />
         <img src="../assets/cards/bss_reverse.jpg" @mouseenter="setAsCurrent" v-else>
+        <div class="cores_container" :id="cardObj.id">
+            <Core :soul="true" :origin="place" :own="own" 
+            v-for="c of Array(cardObj.cores.soul)" :key="c" />
+            <Core :soul="false" :origin="place" :own="own" 
+            v-for="c of Array(cardObj.cores.commons)" :key="c" />
+        </div>
     </div>
 </template>
 
 <script>
 import { computed, onMounted, ref } from 'vue';
 import { useStore } from 'vuex';
+import Core from './Core.vue';
 
 export default {
     name: 'Card',
     props: {
         margin_left: {type: Number, default: 15},
-        card: {default: {id: '', url: '', seted: false, rested: false}},
+        card: {default: {id: '', url: '', seted: false, rested: false, cores: {soul: 0, commons: 0}}},
         setedDef: {default: false, type: Boolean},
-        restedDef: {default: false, type: Boolean}
+        restedDef: {default: false, type: Boolean},
+        place: {default: '', type: String},
+        own: {type: Boolean}
     },
+    components: { Core },
     setup(props) {
         const store = useStore();
+        const card = ref(null);
 
         const socket = store.state.socket;
         const op_id = store.state.op_id;
 
         const marginLeft = computed(() => props.margin_left);
         const cardObj = computed(() => props.card);
+        const carrier = computed(() => store.state.coresCarrier);
+
         const setedDef = props.setedDef;
         const restedDef = props.restedDef;
-        const card = ref(null);
+        const own = props.own;
+        const place = props.place;
+
+        const drop = (ev) => {
+          const origin = ev.dataTransfer.getData('origin');
+          const player_org = ev.dataTransfer.getData('player_org');
+          const card_id_org = ev.dataTransfer.getData('card_id');
+          const card_id_dest = cardObj.value.id;
+          const player_dest = own?socket.socket.id:op_id;
+          const destiny = place;
+          const commons = carrier.value.commons;
+          const soul = carrier.value.soul;
 
 
-        const revealOptions = (ev) => {
-            console.log(ev.pageX);
+          const params = { player_org, player_dest, origin, destiny, 
+            card_id_org, card_id_dest, commons, soul }
+          store.dispatch('moveCores', params);
+          socket.socket.emit('move_cores', {...params, op_id});
         }
 
         const setAsCurrent = () => {
@@ -87,7 +113,7 @@ export default {
             cardObj.value.rested = restedDef;
         })
 
-        return {marginLeft, cardObj, setAsCurrent, drag, restUnrest, revealOptions, card};
+        return {marginLeft, cardObj, setAsCurrent, drag, drop, restUnrest, card};
     }
 }
 </script>
@@ -104,6 +130,7 @@ export default {
     width: var(--sq_width) !important;
     height: var(--sq_height) !important;
 
+    position: relative;
     display: flex;
     justify-content: center;
     align-items: center;
