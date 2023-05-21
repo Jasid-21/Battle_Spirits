@@ -1,10 +1,9 @@
 <template>
-    <div class="card_container" draggable="true" :id="cardObj.id"
+    <div class="card_container" :id="cardObj.id"
     :class="{rested: cardObj.rested}" ref="card"
-    @dragstart.stop="drag($event)"
-    @dblclick="restUnrest"
-    @drop.stop="drop($event)" @dragenter.prevent @dragover.prevent
-    :style="{'margin-left': marginLeft + 'px'}">
+    @dragenter.prevent @dragover.prevent draggable="true"
+    :style="{marginLeft: margin_left + 'px'}"
+    @dragstart.stop="drag($event)" @dblclick="restUnrest" @drop.stop="drop($event)">
         <img :src="cardObj.url" @mouseenter="setAsCurrent" v-if="cardObj.url && !cardObj.seted" />
         <img src="../assets/cards/bss_reverse.jpg" @mouseenter="setAsCurrent" v-else>
         <div class="cores_container" :id="cardObj.id">
@@ -19,13 +18,19 @@
 <script>
 import { computed, onMounted, ref } from 'vue';
 import { useStore } from 'vuex';
+import { dropCores } from '@/helpers/functions';
 import Core from './Core.vue';
 
 export default {
     name: 'Card',
     props: {
         margin_left: {type: Number, default: 15},
-        card: {default: {id: '', url: '', seted: false, rested: false, cores: {soul: 0, commons: 0}}},
+        card: {
+            default: {
+                id: '', url: '', seted: false, 
+                rested: false, cores: {soul: 0, commons: 0}
+            }
+        },
         setedDef: {default: false, type: Boolean},
         restedDef: {default: false, type: Boolean},
         place: {default: '', type: String},
@@ -36,7 +41,7 @@ export default {
         const store = useStore();
         const card = ref(null);
 
-        const socket = store.state.socket;
+        const socket = store.state.socket.socket;
         const op_id = store.state.op_id;
 
         const marginLeft = computed(() => props.margin_left);
@@ -49,37 +54,19 @@ export default {
         const place = props.place;
 
         const drop = (ev) => {
-          const origin = ev.dataTransfer.getData('origin');
-          const player_org = ev.dataTransfer.getData('player_org');
-          const card_id_org = ev.dataTransfer.getData('card_id');
-          const card_id_dest = cardObj.value.id;
-          const player_dest = own?socket.socket.id:op_id;
-          const destiny = place;
-          const commons = carrier.value.commons;
-          const soul = carrier.value.soul;
-
-
-          const params = { player_org, player_dest, origin, destiny, 
-            card_id_org, card_id_dest, commons, soul }
-          store.dispatch('moveCores', params);
-          socket.socket.emit('move_cores', {...params, op_id});
+            if (cardObj.value.seted) { return; };
+            dropCores(ev, cardObj.value.id, own?socket.id:op_id, place, carrier.value, store);
         }
 
         const setAsCurrent = () => {
-            const parent = card.value.parentElement;
-            if (!JSON.parse(parent.getAttribute('data-own')) && cardObj.value.seted) {
-                return;
-            }
-
+            if (!own && cardObj.value.seted) { return; };
             store.commit('setCurrentCard', cardObj.value.url);
         }
 
         const drag = (ev) => {
             const parent = card.value.parentElement;
-            if (!JSON.parse(parent.getAttribute('data-own'))) {
-                alert("You are unauthorized to drag oponents cards...");
-                return;
-            }
+            console.log(own);
+            if (!own) { return; }
 
             ev.dataTransfer.dropEffect = 'move';
             ev.dataTransfer.effectAllowed = 'move';
@@ -96,12 +83,9 @@ export default {
 
         const restUnrest = () => {
             const parent = card.value.parentElement;
-            if (!JSON.parse(parent.getAttribute('data-own'))) {
-                alert("You are unauthorized change oponents cards state...");
-                return;
-            }
+            if (!own) { return; }
             cardObj.value.rested = !cardObj.value.rested;
-            socket.socket.emit('rest_unrest', {
+            socket.emit('rest_unrest', {
                 card_id: cardObj.value.id, 
                 place: parent.getAttribute('data-origin'),
                 op_id

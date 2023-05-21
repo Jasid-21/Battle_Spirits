@@ -1,14 +1,15 @@
 <template>
     <div class="hand myhand" data-origin="in_hand" :data-own="own"
         @dragenter.prevent @dragover.prevent @drop="drop($event)">
-        <Card v-for="c of cards" :key="c.id" :card="c" />
+        <Card v-for="c of cards" :key="c.id" :card="c" :own="own" :place="'in_hand'" />
     </div>
 </template>
 
 <script>
+import { dropCard } from '@/helpers/functions';
 import Card from './Card.vue';
 import { useStore } from 'vuex';
-import { computed, watch } from 'vue';
+import { computed } from 'vue';
 
 export default {
     name: 'hand',
@@ -21,50 +22,18 @@ export default {
         const store = useStore();
         const own = props.own;
 
-        const socket = store.state.socket;
+        const socket = store.state.socket.socket;
         const op_id = store.state.op_id;
-        const cards = computed(() => store.state.cards[own?socket.socket.id:op_id].in_hand);
+        const cards = computed(() => store.state.cards[own?socket.id:op_id].in_hand);
 
         const drop = (ev) => {
-            if (!own) {
-                console.log("Unauthorized action");
-                return;
-            }
-
-            const card_origin = ev.dataTransfer.getData('card_origin');
-            const card_id = ev.dataTransfer.getData('card_id');
-            const card_str = ev.dataTransfer.getData('card_obj');
-            const card = card_str?JSON.parse(card_str):undefined;
-            const player_dest = socket.socket.id;
-            const player_org = socket.socket.id;
-
-            const params = { 
-                origin: card_origin, destiny: 'in_hand', 
-                player_dest, player_org, card_id
-            };
-            console.log(params);
-            store.dispatch('moveCard', params)
-            .then(moved => {
-                if (!moved) {
-                    alert("Something went wrong moving the card...");
-                    return;
-                }
-
-                socket.socket.emit('move_card', { ...params, card, op_id });
+            if (!own) { return; };
+            dropCard(ev, socket.id, own?socket.id:op_id, 'in_hand', store)
+            .then(({ moved, params }) => {
+                if (!moved) { return; };
+                socket.emit('move_card', { ...params, op_id });
             });
         }
-
-        watch(cards.value, (oldVal, newVal) => {
-            console.log(cards.value);
-            if (own) {
-                return;
-            }
-
-            setTimeout(() => {
-                console.log("Hidding card");
-                store.commit('setAllHand', op_id);
-            }, 1500);
-        })
 
         return {cards, drop}
     }

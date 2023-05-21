@@ -33,8 +33,8 @@
 </template>
 
 <script>
+import { socketCreator } from '@/helpers/classes';
 import Navbar from '@/components/Navbar.vue';
-import { socketCreator } from '@/helpers';
 import { ref } from '@vue/reactivity';
 import { useStore } from 'vuex';
 import { useRouter } from 'vue-router';

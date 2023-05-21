@@ -23,9 +23,7 @@ import TabletopVue from '../components/Tabletop.vue';
 import Card from '@/components/Card.vue';
 import CardListDisplayer from '@/components/CardListDisplayer.vue';
 
-import { computed, nextTick, onMounted, ref } from 'vue';
 import { useStore } from 'vuex';
-import { createCard } from '@/helpers';
 export default {
     name: 'GameRoom',
     components: {

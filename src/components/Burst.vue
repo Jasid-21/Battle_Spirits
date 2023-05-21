@@ -16,6 +16,7 @@
 import Card from './Card.vue';
 import { useStore } from 'vuex';
 import { computed } from 'vue';
+import { dropCard } from '@/helpers/functions';
 
 export default {
     name: 'burst_zone',
@@ -25,29 +26,16 @@ export default {
         const store = useStore();
         const own = props.own;
 
-        const socket = store.state.socket;
+        const socket = store.state.socket.socket;
         const op_id = store.state.op_id;
-        const cardInBurst = computed(() => store.state.cards[own?socket.socket.id:op_id].in_burst);
+        const cardInBurst = computed(() => store.state.cards[own?socket.id:op_id].in_burst);
 
         const drop = (ev) => {
-            const card_origin = ev.dataTransfer.getData('card_origin');
-            const card_id = ev.dataTransfer.getData('card_id');
-            const card_str = ev.dataTransfer.getData('card_obj');
-            const card = card_str?JSON.parse(card_str):undefined;
-            const player_dest = own?socket.socket.id:op_id;
-            const player_org = socket.socket.id;
-
-            const params = { origin: card_origin, destiny: 'in_burst', player_dest, player_org, card_id, card };
-            console.log(params);
-            store.dispatch('moveCard', params)
-            .then(moved => {
-                if (!moved) {
-                    alert("Something went wrong moving the card...");
-                    return;
-                }
-
-                socket.socket.emit('move_card', { ...params, op_id });
-            })
+            dropCard(ev, socket.id, socket.id, 'in_burst', store)
+            .then(({ moved, params }) => {
+                if (!moved) { return; };
+                socket.emit('move_card', { ...params, op_id });
+            });
         }
 
         const flipCard = () => {
@@ -55,8 +43,8 @@ export default {
                 return;
             }
             
-            store.commit('flipBurstCard', {player_org: socket.socket.id});
-            socket.socket.emit('flip_burst_card', {player_org: socket.socket.id, op_id});
+            store.commit('flipBurstCard', {player_org: socket.id});
+            socket.socket.emit('flip_burst_card', {player_org: socket.id, op_id});
         }
 
         return { cardInBurst, drop, flipCard }

@@ -4,7 +4,7 @@
             <fai icon="xmark" />
         </button>
         <div class="cardDisplayer" data-own="true" :data-origin="origin">
-            <Card :card="c" v-for="(c, idx) of cards" :key="idx" />
+            <Card :card="c" v-for="(c, idx) of cards" :key="idx" :own="!(player==op_id)" />
         </div>
     </div>
 </template>
@@ -27,9 +27,7 @@ export default {
         const player = computed(() => store.state.cardDisplayer.player);
         const cards = computed(() => {
             const playerCards = store.state.cards[player.value];
-            if (!playerCards) {
-                return [];
-            }
+            if (!playerCards) { return []; }
             const inOriginCards = playerCards[origin.value];
             return inOriginCards;
         });
@@ -47,7 +45,7 @@ export default {
             socket.socket.emit('looking_something', params);
         }
 
-        return { cards, show, origin, hide };
+        return { cards, show, origin, player, op_id, hide };
     }
 }
 </script>

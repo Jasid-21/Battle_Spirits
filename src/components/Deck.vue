@@ -31,6 +31,7 @@
 import { useStore } from 'vuex';
 import Swal from 'sweetalert2'
 import { computed } from 'vue';
+import { showCardDisplayer } from '@/helpers/functions';
 
 export default {
     name: 'Deck',
@@ -52,8 +53,8 @@ export default {
         const drawCard = () => {
             if (!own) { return; }
             
-            store.dispatch('drawCard', {socket_id: socket.socket.id})
-            .then(card => socket.socket.emit('draw_card', {op_id, card}))
+            store.dispatch('drawCard', {player_org: socket.socket.id})
+            .then(() => socket.socket.emit('draw_card', { op_id }))
             .catch(err => console.log(err));
         }
 
@@ -85,14 +86,7 @@ export default {
         }
 
         const showDeck = () => {
-            const params = {
-                origin: 'in_deck',
-                status: true,
-                player: socket.socket.id
-            }
-            store.commit('changeDisplayerStatus', params);
-            store.commit('lookingSomething', {...params, op_id});
-            socket.socket.emit('looking_something', {...params, op_id});
+            showCardDisplayer('in_deck', socket.id, store, socket);
         }
 
         return {looking, drawCard, dropInDeck, showDeck, shuffleDeck};

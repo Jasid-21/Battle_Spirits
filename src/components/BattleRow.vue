@@ -8,6 +8,7 @@
 
 <script>
 import { computed, nextTick, onMounted, onUpdated, ref } from 'vue';
+import { dropCard } from '@/helpers/functions';
 import Card from './Card.vue';
 import { useStore } from 'vuex';
 
@@ -22,10 +23,10 @@ export default {
 
       const { origin, own } = props;
 
-      const socket = store.state.socket;
+      const socket = store.state.socket.socket;
       const op_id = store.state.op_id;
       const row_cards = computed(() => {
-        const cards = store.state.cards[own?socket.socket.id:op_id];
+        const cards = store.state.cards[own?socket.id:op_id];
         return cards[origin];
       });
 
@@ -47,25 +48,11 @@ export default {
       }
 
       function drop(ev) {
-        const card_origin = ev.dataTransfer.getData('card_origin');
-        const card_id = ev.dataTransfer.getData('card_id');
-        const card_str = ev.dataTransfer.getData('card_obj');
-        const card = card_str?JSON.parse(card_str):undefined;
-        const player_dest = own?socket.socket.id:op_id;
-        const player_org = socket.socket.id;
-
-        const params = { origin: card_origin, destiny: origin, player_dest, player_org, card_id, card };
-        console.log(params);
-        store.dispatch('moveCard', params)
-        .then(moved => {
-          if (!moved) {
-            alert("Something went wrong moving the card...");
-            return;
-          }
-
-          socket.socket.emit('move_card', { ...params, op_id });
-          adjustSpaces();
-        })
+        dropCard(ev, socket.id, own?socket.id:op_id, origin, store)
+        .then(({ moved, params }) => {
+            if (!moved) { return; };
+            socket.emit('move_card', { ...params, op_id });
+        });
       }
 
       onMounted(() => {

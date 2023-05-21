@@ -2,14 +2,9 @@ import { io } from "socket.io-client";
 
 export class Card {
     constructor(id, url, seted = false, rested = false) {
-        this.id = id;
-        this.url = url;
-        this.seted = seted;
-        this.rested = rested;
-        this.cores = {
-            commons: 0,
-            soul: 0
-        }
+        this.id = id; this.url = url;
+        this.seted = seted; this.rested = rested;
+        this.cores = { commons: 0, soul: 0 }
     }
 
     restUnrest() {
@@ -42,14 +37,12 @@ export class socketCreator {
             alert(msg.msg);
         });
 
-        this.socket.on('draw_card', ({card, op_id}) => {
-            store.dispatch('drawCard', {card, socket_id: op_id});
+        this.socket.on('draw_card', ({ player_org }) => {
+            store.dispatch('drawCard', { player_org });
         });
 
         this.socket.on('move_card', info => {
-            if (info.card) {
-                info.card = createCard(info.card.id, info.card.url);
-            }
+            console.log(info);
             this.store.dispatch('moveCard', info);
         });
 

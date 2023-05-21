@@ -12,6 +12,7 @@
 </template>
 
 <script>
+import { dropCard } from '@/helpers/functions';
 import { computed } from 'vue';
 import { useStore } from 'vuex';
 
@@ -23,50 +24,31 @@ export default {
         const store = useStore();
         const own = props.own;
 
-        const socket = store.state.socket;
+        const socket = store.state.socket.socket;
         const op_id = store.state.op_id;
 
         const showTrash = () => {
             const params = {
                 origin: 'in_trash',
                 status: true,
-                player: own?socket.socket.id:op_id
+                player: own?socket.id:op_id
             }
             store.commit('changeDisplayerStatus', params);
             store.commit('lookingSomething', {...params, op_id});
-            socket.socket.emit('looking_something', {...params, op_id});
+            socket.emit('looking_something', {...params, op_id});
         }
 
         const last_card_in_trash = computed(() => {
-            const cards = store.state.cards[props.own?socket.socket.id:op_id].in_trash;
+            const cards = store.state.cards[props.own?socket.id:op_id].in_trash;
             return cards.length > 0?cards[cards.length - 1]:undefined;
         });
 
         const dropInTrash = (ev) => {
-            if (!props.own) {
-                alert("You are unauthorized to drop cards into your oponents trash...");
-                return;
-            }
-
-            const origin = ev.dataTransfer.getData('card_origin');
-            const card_id = ev.dataTransfer.getData('card_id');
-            const card_str = ev.dataTransfer.getData('card_obj');
-            const card = card_str?JSON.parse(card_str):undefined;
-
-            const params = {
-                origin, destiny: 'in_trash', card,
-                player_dest: props.own?socket.socket.id:op_id,
-                player_org: socket.socket.id, card_id, op_id
-            }
-
-            store.dispatch('moveCard', params)
-            .then(moved => {
-                if (!moved) {
-                    console.log("Something went wrong moving the card to trash...");
-                    return;
-                }
-
-                socket.socket.emit('move_card', params);
+            if (!props.own) { return; };
+            dropCard(ev, socket.id, own?socket.id:op_id, 'in_trash', store, socket)
+            .then(({ moved, params }) => {
+                if (!moved) { return; };
+                socket.emit('move_card', {...params, op_id});
             });
         }
 

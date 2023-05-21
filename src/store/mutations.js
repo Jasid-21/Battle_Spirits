@@ -1,4 +1,4 @@
-import { shuffleArray, createCardsObject, createCoresObject } from '@/helpers';
+import { shuffleArray } from '@/helpers/functions';
 
 export default {
     clearCarrier(state) {

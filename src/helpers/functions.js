@@ -1,3 +1,6 @@
+const droppeableForCards = ['in_hand', 'in_front', 'in_middle', 'in_back', 'in_burst', 'in_deck', 'in_trash'];
+const croppeableForCores = ['in_trash', 'in_reserve', 'in_life', 'in_void'];
+
 export function createCardsObject() {
     return {
         in_deck: [], in_hand: [], in_front: [],
@@ -16,6 +19,11 @@ export function createCoresObject() {
         in_reserve: {
             commons: 3,
             soul: 1
+        },
+
+        in_life: {
+            commons: 5,
+            soul: 0
         }
     }
 }
@@ -41,8 +49,44 @@ export function createCode(num) {
     return code;
 }
 
+export function dropCard(ev, player_org, player_dest, destiny, store) {
+    return new Promise((resolve, reject) => {
+        const validPlace = droppeableForCards.some(p => p == destiny);
+        if (!validPlace) { return; };
+
+        const origin = ev.dataTransfer.getData('card_origin');
+        const card_id = ev.dataTransfer.getData('card_id');
+
+        const params = { origin, destiny, player_dest, player_org, card_id };
+        console.log(params);
+        store.dispatch('moveCard', params)
+        .then(moved => resolve({ moved, params }));
+    });
+}
+
+export function dropCores(ev, card_id_dest, player_dest, destiny, carrier, store) {
+    return new Promise((resolve, reject) => {
+        const validPlace = droppeableForCards.some(p => p == destiny);
+        if (!validPlace && !card_id_dest) { return; };
+
+        const origin = ev.dataTransfer.getData('origin');
+        const player_org = ev.dataTransfer.getData('player_org');
+        const card_id_org = ev.dataTransfer.getData('card_id');
+        const commons = carrier.commons;
+        const soul = carrier.soul;
 
 
-export function createCard(id, url, seted = false, rested = false) {
-    return new Card(id, url, seted, rested);
+        const params = { player_org, player_dest, origin, destiny, 
+        card_id_org, card_id_dest, commons, soul }
+        store.dispatch('moveCores', params)
+        .then(moved => resolve({ moved, params }));
+    });
+}
+
+export function showCardDisplayer(origin, player, store, socket) {
+    const params = { origin, status: true, player };
+
+    store.commit('changeDisplayerStatus', params);
+    store.commit('lookingSomething', {...params, op_id});
+    socket.emit('looking_something', {...params, op_id});
 }
