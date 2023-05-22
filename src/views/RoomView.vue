@@ -8,11 +8,7 @@
                 <CardListDisplayer />
                 <TabletopVue />
             </div>
-            <div class="phases_and_options">
-                <div class="phases">
-                    <button v-for="(b, idx) of phases" :key="idx">{{ b }}</button>
-                </div>
-            </div>
+            <PhasesButtonsVue />
         </div>
     </div>
 </template>
@@ -22,8 +18,10 @@ import CurrentCard from '@/components/CurrentCard.vue';
 import TabletopVue from '../components/Tabletop.vue';
 import Card from '@/components/Card.vue';
 import CardListDisplayer from '@/components/CardListDisplayer.vue';
+import PhasesButtonsVue from '../components/PhasesButtons.vue';
 
 import { useStore } from 'vuex';
+
 export default {
     name: 'GameRoom',
     components: {
@@ -31,14 +29,7 @@ export default {
         TabletopVue,
         Card,
         CardListDisplayer,
-    },
-
-    setup() {
-        const phases = ['Start', 'Core', 'Draw', 'Refresh', 'Main', 'Attack', 'End'];
-
-        const store = useStore();
-
-        return { phases };
+        PhasesButtonsVue
     }
 }
 </script>
@@ -79,38 +70,5 @@ export default {
     
     display: grid;
     grid-template-columns: 85% 15%;
-}
-
-.phases_and_options {
-    width: 100%;
-    height: 100%;
-    background-color: rgba(189, 189, 189, 0.0);
-
-    display: flex;
-    flex-direction: column;
-    justify-content: space-around;
-    align-items: center;
-}
-
-.phases {
-    width: 70px;
-
-    background-color: rgba(223, 223, 223, 0.4);
-    border: 2px solid rgb(41, 41, 41);
-    border-radius: 10px;
-    padding: 10px;
-    padding-bottom: 0px;
-
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.phases > button {
-    width: 100%;
-    height: 25px;
-    margin-bottom: 10px;
-    border-radius: 5px;
-    border: 1px solid gray;
 }
 </style>

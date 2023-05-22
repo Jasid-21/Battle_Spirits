@@ -15,5 +15,7 @@ export default {
       showing: false,
       origin: 'in_deck',
       player: ''
-    }
+    },
+    active: false,
+    activePhase: 'Start'
 }

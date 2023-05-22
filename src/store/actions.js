@@ -1,6 +1,27 @@
 import { createCardsObject, createCoresObject } from '@/helpers/functions';
 
 export default {
+    changePhase({state, dispatch}, { name }) {
+        state.activePhase = name;
+        if (!state.active) { return; }
+
+        const socket = state.socket.socket;
+        if (name == 'Core') {
+            socket.emit('increment_cores', {player_org: socket.id, origin: 'in_reserve', op_id: state.op_id});
+            return;
+        }
+
+        if (name == 'Draw') {
+            dispatch('drawCard', { player_org: socket.id });
+            socket.emit('draw_card', {player_org: socket.id, op_id: state.op_id});
+            return;
+        }
+
+        if (name == 'Refresh') {
+            socket.emit('refresh_all', { player_org: socket.id, op_id: state.op_id });
+        }
+    },
+
     moveCores({state}, payload) {
         const { player_org, player_dest, origin, destiny, 
         card_id_org, card_id_dest, core_ids } = payload;
@@ -68,12 +89,14 @@ export default {
         state.cards[player_org].in_deck.push(card);
     },
 
-    drawCard({state}, { player_org }) {
+    drawCard({state}, { num, player_org }) {
         console.log(state.cards);
-        const card = state.cards[player_org].in_deck.shift();
-        state.cards[player_org].in_hand.push(card);
-        console.log(card);
-        return card;
+        if (!num) { num = 1; }
+
+        const cards = state.cards[player_org].in_deck.splice(0, num);
+        state.cards[player_org].in_hand.push(...cards);
+        console.log(...cards);
+        return cards;
     },
 
     moveCard({state}, payload) {
@@ -141,13 +164,14 @@ export default {
         }
     },
 
-    addPlayers({state}, payload) {
+    addPlayers({state}, {op_id, active}) {
         state.cards[state.socket.socket.id] = createCardsObject();
+        state.active = active;
         state.looking[state.socket.socket.id] = '';
 
-        state.cards[payload] = createCardsObject();
-        state.looking[payload] = '';
+        state.cards[op_id] = createCardsObject();
+        state.looking[op_id] = '';
 
-        state.op_id = payload;
+        state.op_id = op_id;
     }
 }

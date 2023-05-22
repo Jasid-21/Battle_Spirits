@@ -35,8 +35,8 @@ export class socketCreator {
             console.log("Connectd: ", this.socket.id);
         });
 
-        this.socket.on('duel_start', ({ op_id, deck, op_deck, cores, op_cores }) => {
-            this.store.dispatch('addPlayers', op_id);
+        this.socket.on('duel_start', ({ op_id, deck, op_deck, cores, op_cores, active }) => {
+            this.store.dispatch('addPlayers', { op_id, active });
             this.store.commit('setChoosenDecks', { deck, op_deck });
             this.store.commit('setCores', { cores, op_cores });
             router.push('/game');
@@ -46,8 +46,8 @@ export class socketCreator {
             alert(msg.msg);
         });
 
-        this.socket.on('draw_card', ({ player_org }) => {
-            store.dispatch('drawCard', { player_org });
+        this.socket.on('draw_card', info => {
+            store.dispatch('drawCard', info);
         });
 
         this.socket.on('move_card', info => {
@@ -77,6 +77,19 @@ export class socketCreator {
 
         this.socket.on('increment_cores', info => {
             this.store.commit('incrementCores', info);
+        });
+
+        this.socket.on('change_phase', info => {
+            this.store.dispatch('changePhase', info);
+        });
+
+        this.socket.on('change_turn', () => {
+            this.store.commit('changeTurn');
+        });
+
+        this.socket.on('refresh_all', info => {
+            this.store.commit('refreshAllCards', info);
+            this.store.commit('refreshAllCores', info);
         });
     }
 

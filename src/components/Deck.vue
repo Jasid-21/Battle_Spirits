@@ -1,21 +1,11 @@
 <template>
-    <div class="deck_zone" @dblclick="drawCard"
+    <div class="deck_zone" @dblclick="drawCard(1)"
     @drop="dropInDeck($event)" @dragenter.prevent @dragover.prevent>
         <span class="looking" v-if="looking">Looking deck</span>
         <div class="deck_options_container" v-if="own">
-            <!--To reveal certain number of cards-->
-            <div class="deck_option">
-                <fai icon="magnifying-glass" />
-            </div>
-
-            <!--To view all deck-->
-            <div class="deck_option" @click="showDeck">
-                <fai icon="eye" />
-            </div>
-
-            <!--To mill a card-->
-            <div class="deck_option">
-                <fai icon="arrow-down" />
+            <!--To draw 5 cards-->
+            <div class="deck_option" @click="drawCard(4)">
+                <fai icon="4" />
             </div>
 
             <!--To shuffle deck-->
@@ -50,11 +40,11 @@ export default {
             store.commit('shuffleDeck', {player_org: socket.socket.id});
         }
 
-        const drawCard = () => {
+        const drawCard = (num) => {
             if (!own) { return; }
             
-            store.dispatch('drawCard', {player_org: socket.socket.id})
-            .then(() => socket.socket.emit('draw_card', { op_id }))
+            store.dispatch('drawCard', {num, player_org: socket.socket.id})
+            .then(() => socket.socket.emit('draw_card', { op_id, num }))
             .catch(err => console.log(err));
         }
 

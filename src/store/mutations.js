@@ -2,6 +2,20 @@ import { Card } from '@/helpers/classes';
 import { shuffleArray } from '@/helpers/functions';
 
 export default {
+    changeTurn(state) {
+      state.active = !state.active;
+      state.activePhase = 'Start';
+    },
+
+    refreshAllCores(state, payload) {
+      const { player_org } = payload;
+      const in_trash = state.cores[player_org].in_trash;
+      const in_reserve = state.cores[player_org].in_reserve;
+
+      in_reserve.push(...in_trash);
+      in_trash.splice(0, in_trash.length);
+    },
+
     setCores(state, { cores, op_cores }) {
       state.cores[state.socket.socket.id] = cores;
       state.cores[state.op_id] = op_cores;
@@ -12,6 +26,18 @@ export default {
     incrementCores(state, payload) {
       const { player_org, origin, core } = payload;
       state.cores[player_org][origin].push(core);
+    },
+
+    refreshAllCards(state, payload) {
+      const { player_org } = payload;
+
+      const in_front = state.cards[player_org].in_front;
+      const in_middle = state.cards[player_org].in_middle;
+      const in_back = state.cards[player_org].in_back;
+
+      in_front.forEach(c => c.rested = false);
+      in_middle.forEach(c => c.rested = false);
+      in_back.forEach(c => c.rested = false);
     },
 
     flipBurstCard(state, payload) {
