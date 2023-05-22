@@ -29,17 +29,16 @@ export default {
 
         const drop = (ev) => {
           dropCores(ev, undefined, own?socket.id:op_id, 'in_reserve', store)
-          .then(({ moved, params }) => {
+          .then(({ moved, params, core_ids }) => {
             if (!moved) { return; }
-            socket.emit('move_cores', {...params, op_id});
+            socket.emit('move_cores', {...params, op_id, core_ids});
           });
         }
 
         const incrementCores = () => {
             if (!own) { return };
-            const params = { player_org: socket.id, origin: 'in_reserve' }
-            store.commit('incrementCores', params);
-            socket.emit('increment_cores', {...params, op_id});
+            const params = { player_org: socket.id, origin: 'in_reserve', op_id }
+            socket.emit('increment_cores', params);
         }
 
         return { own, cores, drop, incrementCores };

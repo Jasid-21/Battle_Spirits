@@ -57,7 +57,7 @@ export function dropCores(ev, card_id_dest, player_dest, destiny, store) {
         const params = { player_org, player_dest, origin, destiny, 
         card_id_org, card_id_dest };
         store.dispatch('moveCores', params)
-        .then(moved => resolve({ moved, params }));
+        .then(({ moved, core_ids }) => resolve({ moved, params, core_ids }));
     });
 }
 

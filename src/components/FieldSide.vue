@@ -1,6 +1,7 @@
 <template>
   <div class="masterContainer" :class="{oponents_side: !own}">
     <Hand :own="own" />
+    <VoidVue :own="own" />
     <div class="side_zone left_zone">
       <LifeVue :own="own" />
       <Burst :own="own" />
@@ -31,6 +32,7 @@ import Hand from './Hand.vue';
 import Trash from './Trash.vue';
 import Burst from './Burst.vue';
 import LifeVue from './Life.vue';
+import VoidVue from './Void.vue';
 import CoresReserve from './CoresReserve.vue';
 import CoresTrash from './CoresTrash.vue';
 
@@ -44,7 +46,7 @@ export default {
       Card, BattleRow, LifeVue,
       Deck, TrashCards: Trash,
       Hand, Burst, CoresReserve,
-      CoresTrash
+      CoresTrash, VoidVue
     },
     setup(props) {
       const store = useStore();

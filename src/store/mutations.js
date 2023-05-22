@@ -10,8 +10,8 @@ export default {
     },
 
     incrementCores(state, payload) {
-      const { player_org, origin } = payload;
-      state.cores[player_org][origin].commons++
+      const { player_org, origin, core } = payload;
+      state.cores[player_org][origin].push(core);
     },
 
     flipBurstCard(state, payload) {

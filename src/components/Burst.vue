@@ -7,7 +7,7 @@
                 <fai icon="arrows-rotate" />
             </div>
         </div>
-        <Card :setedDef="true" :card="cardInBurst" 
+        <Card :setedDef="true" :card="cardInBurst" :own="own" 
         :margin_left="0" v-if="Object.keys(cardInBurst).length > 0" />
     </div>
 </template>
@@ -44,7 +44,7 @@ export default {
             }
             
             store.commit('flipBurstCard', {player_org: socket.id});
-            socket.socket.emit('flip_burst_card', {player_org: socket.id, op_id});
+            socket.emit('flip_burst_card', {player_org: socket.id, op_id});
         }
 
         return { cardInBurst, drop, flipCard }

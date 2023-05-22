@@ -3,7 +3,7 @@ import { createCardsObject, createCoresObject } from '@/helpers/functions';
 export default {
     moveCores({state}, payload) {
         const { player_org, player_dest, origin, destiny, 
-        card_id_org, card_id_dest } = payload;
+        card_id_org, card_id_dest, core_ids } = payload;
         console.log(payload);
 
         // Get the orogin object.
@@ -14,7 +14,7 @@ export default {
             const card = state.cards[player_org][origin].find(c => c.id == card_id_org); //By reference
             originObj = card.cores; // By reference
         }
-        if (!originObj) { return; }
+        if (!originObj) { return { moved: false }; }
 
         // Get the destiny object.
         var destinyObj;
@@ -24,14 +24,35 @@ export default {
             const card = state.cards[player_dest][destiny].find(c => c.id == card_id_dest);
             destinyObj = card.cores;
         }
-        if (!destinyObj) { return; }
+        if (!destinyObj) { return { moved: false }; }
 
         // Get the selected cores and set the new value for originObj.
-        var cores = originObj.filter(c => c.selected); // By reference
-        originObj.splice(0, originObj.length, ...originObj.filter(c => !c.selected));  // By reference
+        var cores = [];
+        var ids;
+        if (core_ids) {
+            for (var id of core_ids) {
+                const idx = originObj.findIndex(c => c.id == id);
+                const core = originObj[idx];
+                cores.push(core);
+
+                originObj.splice(idx, 1);
+            }
+            console.log(cores);
+        } else {
+            cores = originObj.filter(c => c.selected); // By reference.
+            ids = cores.map(c => c.id);
+            originObj.splice(0, originObj.length, ...originObj.filter(c => !c.selected));  // By reference.
+        }
+
+        if (destiny == 'in_void') {
+            cores = null;
+            return { moved: true, core_ids: ids };
+        }
 
         destinyObj.push(...cores);
         destinyObj.forEach(c => c.selected = false);
+
+        return { moved: true, core_ids: ids };
     },
 
     returnToDeck({state}, payload) {

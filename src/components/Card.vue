@@ -54,9 +54,9 @@ export default {
 
         const drop = (ev) => {
           dropCores(ev, cardObj.value.id, own?socket.id:op_id, place, store)
-          .then(({ moved, params }) => {
+          .then(({ moved, params, core_ids }) => {
             if (!moved) { return; }
-            socket.emit('move_cores', {...params, op_id});
+            socket.emit('move_cores', {...params, op_id, core_ids});
           });
         }
 
@@ -112,6 +112,7 @@ export default {
     top: 50%;
 
     display: flex;
+    flex-wrap: wrap;
 }
 
 .card_container {

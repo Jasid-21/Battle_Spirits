@@ -1,7 +1,8 @@
 <template>
     <div class="hand myhand" data-origin="in_hand" :data-own="own"
         @dragenter.prevent @dragover.prevent @drop="drop($event)">
-        <Card v-for="c of cards" :key="c.id" :card="c" :own="own" :place="'in_hand'" />
+        <Card v-for="c of cards" :key="c.id" :place="'in_hand'" 
+        :card="c" :own="own" :setedDef="!own"  />
     </div>
 </template>
 

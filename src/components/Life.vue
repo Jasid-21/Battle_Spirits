@@ -27,9 +27,9 @@ export default {
 
         const drop = (ev) => {
             dropCores(ev, undefined, own?socket.id:op_id, 'in_life', store)
-            .then(({ moved, params }) => {
+            .then(({ moved, params, core_ids }) => {
                 if (!moved) { return; }
-                socket.emit('move_cores', {...params, op_id});
+                socket.emit('move_cores', {...params, op_id, core_ids});
             });
         }
 
