@@ -2,7 +2,7 @@
   <div class="masterContainer" :class="{oponents_side: !own}">
     <Hand :own="own" />
     <div class="side_zone left_zone">
-      <div class="life_zone"></div>
+      <LifeVue :own="own" />
       <Burst :own="own" />
       <CoresReserve :own="own" :cores="coresObj" />
     </div>
@@ -30,8 +30,10 @@ import Deck from './Deck.vue';
 import Hand from './Hand.vue';
 import Trash from './Trash.vue';
 import Burst from './Burst.vue';
+import LifeVue from './Life.vue';
 import CoresReserve from './CoresReserve.vue';
 import CoresTrash from './CoresTrash.vue';
+
 import { useStore } from 'vuex';
 import { computed } from 'vue';
 
@@ -39,7 +41,7 @@ export default {
     name: "FieldSide",
     props: ['own'],
     components: {
-      Card, BattleRow,
+      Card, BattleRow, LifeVue,
       Deck, TrashCards: Trash,
       Hand, Burst, CoresReserve,
       CoresTrash
@@ -99,10 +101,6 @@ export default {
   align-items: flex-end;
   justify-content: space-between;
   padding: 27px 2px;
-}
-.life_zone, .reserve_zone {
-  width: 65%;
-  height: 21%;
 }
 
 .battle_zone {

@@ -1,10 +1,10 @@
 import { io } from "socket.io-client";
 
 export class Card {
-    constructor(id, url, seted = false, rested = false) {
+    constructor(id, url) {
         this.id = id; this.url = url;
-        this.seted = seted; this.rested = rested;
-        this.cores = { commons: 0, soul: 0 }
+        this.seted = false; this.rested = false;
+        this.cores = []
     }
 
     restUnrest() {
@@ -13,6 +13,14 @@ export class Card {
 
     setReveal() {
         this.seted = !this.seted;
+    }
+}
+
+export class Core {
+    constructor(id, soul = false) {
+        this.id = id;
+        this.soul = soul;
+        this.selected = false;
     }
 }
 
@@ -27,9 +35,10 @@ export class socketCreator {
             console.log("Connectd: ", this.socket.id);
         });
 
-        this.socket.on('duel_start', ({ op_id, deck, op_deck }) => {
+        this.socket.on('duel_start', ({ op_id, deck, op_deck, cores, op_cores }) => {
             this.store.dispatch('addPlayers', op_id);
             this.store.commit('setChoosenDecks', { deck, op_deck });
+            this.store.commit('setCores', { cores, op_cores });
             router.push('/game');
         });
 

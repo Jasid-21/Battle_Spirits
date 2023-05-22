@@ -7,10 +7,10 @@
         <img :src="cardObj.url" @mouseenter="setAsCurrent" v-if="cardObj.url && !cardObj.seted" />
         <img src="../assets/cards/bss_reverse.jpg" @mouseenter="setAsCurrent" v-else>
         <div class="cores_container" :id="cardObj.id">
-            <Core :soul="true" :origin="place" :own="own" 
-            v-for="c of Array(cardObj.cores.soul)" :key="c" />
-            <Core :soul="false" :origin="place" :own="own" 
-            v-for="c of Array(cardObj.cores.commons)" :key="c" />
+            <Core :own="own" v-for="(c, idx) of cardObj.cores.filter(c => c.soul)" 
+            :key="idx" :origin="place" :core="c" />
+            <Core :own="own" v-for="(c, idx) of cardObj.cores.filter(c => !c.soul)" 
+            :key="idx" :origin="place" :core="c" />
         </div>
     </div>
 </template>
@@ -46,7 +46,6 @@ export default {
 
         const marginLeft = computed(() => props.margin_left);
         const cardObj = computed(() => props.card);
-        const carrier = computed(() => store.state.coresCarrier);
 
         const setedDef = props.setedDef;
         const restedDef = props.restedDef;
@@ -54,8 +53,11 @@ export default {
         const place = props.place;
 
         const drop = (ev) => {
-            if (cardObj.value.seted) { return; };
-            dropCores(ev, cardObj.value.id, own?socket.id:op_id, place, carrier.value, store);
+          dropCores(ev, cardObj.value.id, own?socket.id:op_id, place, store)
+          .then(({ moved, params }) => {
+            if (!moved) { return; }
+            socket.emit('move_cores', {...params, op_id});
+          });
         }
 
         const setAsCurrent = () => {
@@ -103,6 +105,15 @@ export default {
 </script>
 
 <style scoped>
+.cores_container {
+    max-width: 100% !important;
+    position: absolute;
+    left: 0px;
+    top: 50%;
+
+    display: flex;
+}
+
 .card_container {
     --sq_width: 50px;
     --sq_height: 70px;

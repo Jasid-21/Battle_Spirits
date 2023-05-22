@@ -1,23 +1,17 @@
+import { Card } from '@/helpers/classes';
 import { shuffleArray } from '@/helpers/functions';
 
 export default {
-    clearCarrier(state) {
-      state.coresCarrier.commons = 0;
-      state.coresCarrier.soul = 0;
+    setCores(state, { cores, op_cores }) {
+      state.cores[state.socket.socket.id] = cores;
+      state.cores[state.op_id] = op_cores;
+
+      console.log(state.cores);
     },
 
     incrementCores(state, payload) {
       const { player_org, origin } = payload;
       state.cores[player_org][origin].commons++
-    },
-
-    modifyCoresCarrier(state, { inc, soul }) {
-      if (inc) {
-        state.coresCarrier[soul?'soul':'commons']++;
-        return;
-      }
-
-      state.coresCarrier[soul?'soul':'commons']--;
     },
 
     flipBurstCard(state, payload) {
@@ -74,23 +68,17 @@ export default {
     },
 
     setChoosenDecks(state, { deck, op_deck }) {
-      state.cards[state.socket.socket.id].in_deck = deck;
-      state.cards[state.op_id].in_deck = op_deck;
+      state.cards[state.socket.socket.id].in_deck = deck.map(c => new Card(c.id, c.url));
+      state.cards[state.op_id].in_deck = op_deck.map(c => new Card(c.id, c.url));
       
       state.cards[state.socket.socket.id].in_deck.forEach(card => {
         const img = new Image();
         img.src = card.url;
-        img.onload = async () => {
-          console.log("Done");
-        }
       });
 
       state.cards[state.op_id].in_deck.forEach(card => {
         const img = new Image();
         img.src = card.url;
-        img.onload = async () => {
-          console.log("Done");
-        }
       });
     },
 

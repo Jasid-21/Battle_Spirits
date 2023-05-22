@@ -1,45 +1,37 @@
 import { createCardsObject, createCoresObject } from '@/helpers/functions';
 
 export default {
-    moveCores({state, commit}, payload) {
+    moveCores({state}, payload) {
         const { player_org, player_dest, origin, destiny, 
-        card_id_org, card_id_dest, commons, soul } = payload;
+        card_id_org, card_id_dest } = payload;
         console.log(payload);
 
+        // Get the orogin object.
+        var originObj;
         if (!card_id_org) {
-            const c_prev = state.cores[player_org][origin].commons;
-            const s_prev = state.cores[player_org][origin].soul;
-
-            state.cores[player_org][origin].commons = c_prev - commons;
-            state.cores[player_org][origin].soul = s_prev - soul;
-
+            originObj = state.cores[player_org][origin]; // By reference.
         } else {
-            const card = state.cards[player_org][origin].find(c => c.id == card_id_org);
-            const c_prev = card.cores.commons;
-            const s_prev = card.cores.soul;
-
-            card.cores.commons = c_prev - commons;
-            card.cores.soul = s_prev - soul;
+            const card = state.cards[player_org][origin].find(c => c.id == card_id_org); //By reference
+            originObj = card.cores; // By reference
         }
-        
+        if (!originObj) { return; }
 
-        if (!card_id_dest) {
-            const c_prev = state.cores[player_dest][destiny].commons;
-            const s_prev = state.cores[player_dest][destiny].soul;
-
-            state.cores[player_dest][destiny].commons = c_prev + commons;
-            state.cores[player_dest][destiny].soul = s_prev + soul;
+        // Get the destiny object.
+        var destinyObj;
+        if (!card_id_dest) {  // All of this was by reference
+            destinyObj = state.cores[player_dest][destiny];
         } else {
             const card = state.cards[player_dest][destiny].find(c => c.id == card_id_dest);
-            const c_prev = card.cores.commons;
-            const s_prev = card.cores.soul;
-
-            card.cores.commons = c_prev + commons;
-            card.cores.soul = s_prev + soul;
+            destinyObj = card.cores;
         }
+        if (!destinyObj) { return; }
 
-        console.log(state.cores);
-        commit('clearCarrier');
+        // Get the selected cores and set the new value for originObj.
+        var cores = originObj.filter(c => c.selected); // By reference
+        originObj.splice(0, originObj.length, ...originObj.filter(c => !c.selected));  // By reference
+
+        destinyObj.push(...cores);
+        destinyObj.forEach(c => c.selected = false);
     },
 
     returnToDeck({state}, payload) {
@@ -109,14 +101,9 @@ export default {
 
         //Returning cores to reserve.
         if (!['in_front', 'in_middle', 'in_back'].some(p => p == destiny)) {
-            const prev_c = state.cores[player_org].in_reserve.commons;
-            const prev_s = state.cores[player_org].in_reserve.soul;
-
-            state.cores[player_org].in_reserve.commons = prev_c + newCard.cores.commons;
-            state.cores[player_org].in_reserve.soul = prev_s + newCard.cores.soul;
-
-            newCard.cores.commons = 0;
-            newCard.cores.soul = 0;
+            const cores = newCard.cores;
+            state.cores[player_org].in_reserve.push(...cores);
+            newCard.cores.splice(0, newCard.cores.length);
         }
 
         // Placing the card in destiny.
@@ -134,12 +121,10 @@ export default {
     },
 
     addPlayers({state}, payload) {
-        state.cards[state.socket.socket.id] = createCardsObject(true);
-        state.cores[state.socket.socket.id] = createCoresObject();
+        state.cards[state.socket.socket.id] = createCardsObject();
         state.looking[state.socket.socket.id] = '';
 
-        state.cards[payload] = createCardsObject(false, 40);
-        state.cores[payload] = createCoresObject();
+        state.cards[payload] = createCardsObject();
         state.looking[payload] = '';
 
         state.op_id = payload;

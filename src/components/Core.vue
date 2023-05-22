@@ -1,42 +1,39 @@
 <template>
-    <div ref="core" class="core" :class="{soul, selected}" draggable="true"
-  @click="flipSelectStatus" @dragstart.stop="drag($event)">
-        <fai icon="diamond" />
+    <div ref="core" class="core" draggable="true"
+    :class="{soul: coreObj.soul, selected: coreObj.selected}"
+    @click="flipSelectStatus" @dragstart.stop="drag($event)">
+        <img src="../assets/soul_core.png" v-if="coreObj.soul">
+        <img src="../assets/common_core.png" v-else>
     </div>
 </template>
 
 <script>
-import { ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useStore } from 'vuex';
 export default {
     name: 'Core',
-    props: ['soul', 'own', 'origin'],
+    props: {
+        core: { default: {id: '', soul: false, selected: false} },
+        own: { type: Boolean },
+        origin: { default: '', type: String }
+    },
     setup(props) {
         const store = useStore();
         const core = ref(null);
 
-        const soul = props.soul;
         const own = props.own;
         const origin = props.origin;
-
+        const coreObj = computed(() => props.core);
         const socket = store.state.socket;
-        const op_id = store.state.op_id;
-        const selected = ref(false);
 
         const flipSelectStatus = () => {
-            if (!own) { return; };
-            selected.value = !selected.value;
-
-            const params = {
-                inc: selected.value,
-                soul
-            }
-            store.commit('modifyCoresCarrier', params);
+            if (!own) { return; }
+            coreObj.value.selected = !coreObj.value.selected;
         }
 
         const drag = (ev) => {
             console.log("Drag!");
-            if (!own) { return; };
+            if (!own) { return; }
             ev.dataTransfer.dropEffect = 'move';
             ev.dataTransfer.effectAllowed = 'move';
 
@@ -49,22 +46,32 @@ export default {
             }
         }
 
-        return {core, soul, selected, flipSelectStatus, drag};
+        return {core, coreObj, flipSelectStatus, drag};
     }
 }
 </script>
 
 <style scoped>
-.core.selected {
-    color: rgb(0, 91, 177);
+.core > img {
+    max-width: 100% !important;
+    max-height: 100% !important;
 }
+.core.selected {
+    background-color: rgba(214, 245, 255, 0.596);
+}
+
+.core.soul.selected {
+    background-color: rgba(255, 214, 214, 0.596);
+}
+
 .core {
-    width: 13px;
-    height: 13px;
-    color: rgb(0, 121, 177);
+    width: 14px;
+    height: 14px;
+    background-color: rgba(99, 219, 255, 0.3);
+    border-radius: 50%;
 }
 
 .core.soul {
-    color: red;
+    background-color: rgba(255, 85, 85, 0.5);
 }
 </style>
