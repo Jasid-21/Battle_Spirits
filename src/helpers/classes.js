@@ -1,5 +1,16 @@
 import { io } from "socket.io-client";
 
+export function newMessage(msg, sender_id, players) {
+    console.log(players);
+    const sender = players.find(p => p.id == sender_id);
+    if (!sender) { return; }
+
+    return {
+        msg,
+        sender_name: sender.username
+    }
+}
+
 export class Card {
     constructor(id, url) {
         this.id = id; this.url = url;
@@ -35,8 +46,8 @@ export class socketCreator {
             console.log("Connectd: ", this.socket.id);
         });
 
-        this.socket.on('duel_start', ({ op_id, deck, op_deck, cores, op_cores, active }) => {
-            this.store.dispatch('addPlayers', { op_id, active });
+        this.socket.on('duel_start', ({ op_id, deck, op_deck, cores, op_cores, active, players }) => {
+            this.store.dispatch('addPlayers', { op_id, players, active });
             this.store.commit('setChoosenDecks', { deck, op_deck });
             this.store.commit('setCores', { cores, op_cores });
             router.push('/game');
@@ -90,6 +101,10 @@ export class socketCreator {
         this.socket.on('refresh_all', info => {
             this.store.commit('refreshAllCards', info);
             this.store.commit('refreshAllCores', info);
+        });
+
+        this.socket.on('new_message', info => {
+            this.store.commit('newMessage', info);
         });
     }
 

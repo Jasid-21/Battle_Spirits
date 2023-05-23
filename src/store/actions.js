@@ -164,7 +164,7 @@ export default {
         }
     },
 
-    addPlayers({state}, {op_id, active}) {
+    addPlayers({state}, {op_id, active, players}) {
         state.cards[state.socket.socket.id] = createCardsObject();
         state.active = active;
         state.looking[state.socket.socket.id] = '';
@@ -173,5 +173,6 @@ export default {
         state.looking[op_id] = '';
 
         state.op_id = op_id;
+        state.players = players;
     }
 }

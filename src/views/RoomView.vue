@@ -10,6 +10,7 @@
             </div>
             <PhasesButtonsVue />
         </div>
+        <GameChat />
     </div>
 </template>
 
@@ -19,8 +20,7 @@ import TabletopVue from '../components/Tabletop.vue';
 import Card from '@/components/Card.vue';
 import CardListDisplayer from '@/components/CardListDisplayer.vue';
 import PhasesButtonsVue from '../components/PhasesButtons.vue';
-
-import { useStore } from 'vuex';
+import GameChat from '@/components/GameChat.vue';
 
 export default {
     name: 'GameRoom',
@@ -29,7 +29,8 @@ export default {
         TabletopVue,
         Card,
         CardListDisplayer,
-        PhasesButtonsVue
+        PhasesButtonsVue,
+        GameChat
     }
 }
 </script>
@@ -47,7 +48,7 @@ export default {
     height: 100vh;
 
     display: grid;
-    grid-template-columns: 30% 70%;
+    grid-template-columns: 25% 57% 18%;
 
     background: url('../assets/dalle_background_croped.png');
     background-position-y: bottom;
@@ -69,6 +70,6 @@ export default {
     background-color: rgba(80, 80, 80, 0.4);
     
     display: grid;
-    grid-template-columns: 85% 15%;
+    grid-template-columns: 83% 17%;
 }
 </style>

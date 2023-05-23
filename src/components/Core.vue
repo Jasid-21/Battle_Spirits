@@ -32,7 +32,8 @@ export default {
         }
 
         const drag = (ev) => {
-            console.log("Drag!");
+            console.log("Dragging core");
+            ev.stopPropagation();
             if (!own) { return; }
             ev.dataTransfer.dropEffect = 'move';
             ev.dataTransfer.effectAllowed = 'move';

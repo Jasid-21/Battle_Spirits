@@ -1,7 +1,14 @@
-import { Card } from '@/helpers/classes';
+import { Card, newMessage } from '@/helpers/classes';
 import { shuffleArray } from '@/helpers/functions';
 
 export default {
+    newMessage(state, payload) {
+      const { msg, player_org, players } = payload;
+      const message = newMessage(msg, player_org, state.players, players);
+      if (!message) { return; }
+      state.messages.push(message);
+    },
+
     changeTurn(state) {
       state.active = !state.active;
       state.activePhase = 'Start';

@@ -52,7 +52,7 @@ export default {
 
       var socket;
       const deck_list = ref([]);
-      const username = ref('Sefirot');
+      const username = ref('Player');
       const choosen_deck = ref('__none__');
       const rooms = ref([]);
       const choosen_room = ref({name: '', id: -1, board_id: ''});
@@ -74,9 +74,10 @@ export default {
           });
 
           return;
-        } 
+        }
 
         socket.socket.emit('start_duel', {
+          username: username.value,
           board_name: choosen_room.value.name,
           deckString: deck_list.value.find(d => d.name == choosen_deck.value).deck
         });

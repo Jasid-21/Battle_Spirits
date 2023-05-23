@@ -66,6 +66,7 @@ export default {
         }
 
         const drag = (ev) => {
+            console.log("Dragging card");
             const parent = card.value.parentElement;
             console.log(own);
             if (!own) { return; }

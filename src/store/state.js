@@ -17,5 +17,7 @@ export default {
       player: ''
     },
     active: false,
-    activePhase: 'Start'
+    activePhase: 'Start',
+    players: [],
+    messages: []
 }
