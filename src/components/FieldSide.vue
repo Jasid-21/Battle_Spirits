@@ -21,6 +21,7 @@
         </div>
       </div>
     </div>
+    <RevealZone :own="own" />
   </div>
 </template>
 
@@ -35,6 +36,7 @@ import LifeVue from './Life.vue';
 import VoidVue from './Void.vue';
 import CoresReserve from './CoresReserve.vue';
 import CoresTrash from './CoresTrash.vue';
+import RevealZone from './RevealZone.vue';
 
 import { useStore } from 'vuex';
 import { computed } from 'vue';
@@ -46,7 +48,8 @@ export default {
       Card, BattleRow, LifeVue,
       Deck, TrashCards: Trash,
       Hand, Burst, CoresReserve,
-      CoresTrash, VoidVue
+      CoresTrash, VoidVue,
+      RevealZone
     },
     setup(props) {
       const store = useStore();

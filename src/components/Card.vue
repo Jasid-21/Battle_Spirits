@@ -74,7 +74,8 @@ export default {
             ev.dataTransfer.dropEffect = 'move';
             ev.dataTransfer.effectAllowed = 'move';
 
-            const origin = parent.getAttribute('data-origin');
+            const origin = place;
+            ev.dataTransfer.setData('player_org', socket.id);
             ev.dataTransfer.setData('card_origin', origin);
             ev.dataTransfer.setData('card_id', cardObj.value.id);
 

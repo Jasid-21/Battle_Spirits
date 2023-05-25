@@ -1,4 +1,5 @@
 import { io } from "socket.io-client";
+import Swal from 'sweetalert2'
 
 export function newMessage(msg, sender_id, players) {
     console.log(players);
@@ -46,6 +47,14 @@ export class socketCreator {
             console.log("Connectd: ", this.socket.id);
         });
 
+        this.socket.on('request_duel', info => {
+            this.store.commit('requestDuel', info);
+        });
+
+        this.socket.on('accept_duel', info => {
+            this.socket.emit('start_duel', info);
+        });
+
         this.socket.on('duel_start', ({ op_id, deck, op_deck, cores, op_cores, active, players }) => {
             this.store.dispatch('addPlayers', { op_id, players, active });
             this.store.commit('setChoosenDecks', { deck, op_deck });
@@ -54,7 +63,10 @@ export class socketCreator {
         });
 
         this.socket.on('socket_message', (msg) => {
-            alert(msg.msg);
+            Swal.fire({
+                title: 'Server message',
+                text: msg.msg
+            })
         });
 
         this.socket.on('draw_card', info => {
@@ -82,6 +94,10 @@ export class socketCreator {
             this.store.commit('flipBurstCard', info);
         });
 
+        this.socket.on('reveal_top', info => {
+            this.store.commit('revealTop', info);
+        });
+
         this.socket.on('move_cores', info => {
             this.store.dispatch('moveCores', info);
         });
@@ -105,6 +121,18 @@ export class socketCreator {
 
         this.socket.on('new_message', info => {
             this.store.commit('newMessage', info);
+        });
+
+        this.socket.on('multi_return_to_bottom', info => {
+            this.store.dispatch('multiReturnToBottom', info);
+        });
+
+        this.socket.on('reveal_cards', info => {
+            this.store.dispatch('revealCards', info);
+        });
+
+        this.socket.on('shuffle_deck', info => {
+            this.store.commit('shuffleDeck', info);
         });
     }
 

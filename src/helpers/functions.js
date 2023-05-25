@@ -1,11 +1,12 @@
-const droppeableForCards = ['in_hand', 'in_front', 'in_middle', 'in_back', 'in_burst', 'in_deck', 'in_trash'];
+const droppeableForCards = ['in_hand', 'in_front', 'in_middle', 
+'in_back', 'in_burst', 'in_deck', 'in_trash', 'in_reveal'];
 const droppeableForCores = ['in_trash', 'in_reserve', 'in_life', 'in_void'];
 
 export function createCardsObject() {
     return {
         in_deck: [], in_hand: [], in_front: [],
         in_middle: [], in_back: [], in_trash: [],
-        in_burst: {}
+        in_reveal: [], in_burst: {}
     }
 };
 
@@ -35,6 +36,7 @@ export function dropCard(ev, player_org, player_dest, destiny, store) {
         const validPlace = droppeableForCards.some(p => p == destiny);
         if (!validPlace) { return; };
 
+        const player_org = ev.dataTransfer.getData('player_org');
         const origin = ev.dataTransfer.getData('card_origin');
         const card_id = ev.dataTransfer.getData('card_id');
 
@@ -61,7 +63,7 @@ export function dropCores(ev, card_id_dest, player_dest, destiny, store) {
     });
 }
 
-export function showCardDisplayer(origin, player, store, socket) {
+export function showCardDisplayer(origin, player, store, socket, op_id) {
     const params = { origin, status: true, player };
 
     store.commit('changeDisplayerStatus', params);

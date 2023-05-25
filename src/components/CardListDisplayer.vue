@@ -4,7 +4,8 @@
             <fai icon="xmark" />
         </button>
         <div class="cardDisplayer" data-own="true" :data-origin="origin">
-            <Card :card="c" v-for="(c, idx) of cards" :key="idx" :own="!(player==op_id)" />
+            <Card :card="c" v-for="(c, idx) of cards" :place="origin"
+            :key="idx" :own="!(player==op_id)" />
         </div>
     </div>
 </template>

@@ -47,15 +47,20 @@ export default {
       in_back.forEach(c => c.rested = false);
     },
 
+    revealTop(state, payload) {
+      const { player_org } = payload;
+      const card = state.cards[player_org].in_deck.shift();
+      state.cards[player_org].in_reveal.push(card);
+    },
+
     flipBurstCard(state, payload) {
       const { player_org } = payload;
       state.cards[player_org].in_burst.seted = !state.cards[player_org].in_burst.seted;
     },
+    
     shuffleDeck(state, payload){
-      const { player_org } = payload;
-      const deck = shuffleArray(state.cards[player_org].in_deck);
+      const { deck, player_org } = payload;
       state.cards[player_org].in_deck = deck;
-      console.log("Deck shuffled!");
     },
 
     lookingSomething(state, payload) {
@@ -124,5 +129,9 @@ export default {
     setAllHand(state, payload) {
       console.log(state.cards[payload].in_hand);
       state.cards[payload].in_hand.forEach(card => card.seted = true);
+    },
+
+    requestDuel(state, payload) {
+      state.requests.push(payload);
     }
 }

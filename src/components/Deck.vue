@@ -4,12 +4,22 @@
         <span class="looking" v-if="looking">Looking deck</span>
         <div class="deck_options_container" v-if="own">
             <!--To draw 5 cards-->
-            <div class="deck_option" @click="drawCard(4)">
+            <div class="deck_option" @click="drawCard(4)" @dblclick.stop>
                 <fai icon="4" />
             </div>
 
+            <!--To look the entire deck-->
+            <div class="deck_option" @click="showDeck" @dblclick.stop>
+                <fai icon="eye" />
+            </div>
+
+            <!--To view or reveal cards from top-->
+            <div class="deck_option" @click="revealTop" @dblclick.stop>
+                <fai icon="right-from-bracket" />
+            </div>
+
             <!--To shuffle deck-->
-            <div class="deck_option" @click="shuffleDeck">
+            <div class="deck_option" @click="shuffleDeck" @dblclick.stop>
                 <fai icon="shuffle" />
             </div>
         </div>
@@ -29,22 +39,28 @@ export default {
     setup(props) {
         const store = useStore();
         const own = props.own;
-        const socket = store.state.socket;
+        const socket = store.state.socket.socket;
         const op_id = store.state.op_id;
         const looking = computed(() => {
-            const value = store.state.looking[own?socket.socket.id:op_id];
+            const value = store.state.looking[own?socket.id:op_id];
             return value == 'in_deck';
         });
 
+        const revealTop = () => {
+            store.commit('revealTop', { player_org: socket.id });
+            socket.emit('reveal_top', {player_org: socket.id, op_id});
+        }
+
         const shuffleDeck = () => {
-            store.commit('shuffleDeck', {player_org: socket.socket.id});
+            const deck = store.state.cards[socket.id].in_deck;
+            socket.emit('shuffle_deck', { deck, player_org: socket.id, op_id });
         }
 
         const drawCard = (num) => {
             if (!own) { return; }
             
-            store.dispatch('drawCard', {num, player_org: socket.socket.id})
-            .then(() => socket.socket.emit('draw_card', { op_id, num }))
+            store.dispatch('drawCard', {num, player_org: socket.id})
+            .then(() => socket.emit('draw_card', { op_id, num }))
             .catch(err => console.log(err));
         }
 
@@ -67,19 +83,19 @@ export default {
             }).then(result => {
                 const top = result.isConfirmed;
                 const params = {
-                    origin, player_org: socket.socket.id,
+                    origin, player_org: socket.id,
                     top, card_id
                 }
                 store.dispatch('returnToDeck', params)
-                socket.socket.emit('return_to_deck', { ...params, op_id });
+                socket.emit('return_to_deck', { ...params, op_id });
             });
         }
 
         const showDeck = () => {
-            showCardDisplayer('in_deck', socket.id, store, socket);
+            showCardDisplayer('in_deck', socket.id, store, socket, op_id);
         }
 
-        return {looking, drawCard, dropInDeck, showDeck, shuffleDeck};
+        return {looking, drawCard, dropInDeck, showDeck, shuffleDeck, revealTop};
     }
 }
 </script>

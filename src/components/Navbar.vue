@@ -15,10 +15,11 @@ export default {
 <style scoped>
 nav {
   width: 100%;
-  height: 100%;
+  height: 70px;
 
   background-color: rgb(219, 121, 121);
   box-shadow: 0px 2px 5px black;
+  position: relative;
 
   grid-column: 1/3;
   grid-row: 1/2;
@@ -27,7 +28,7 @@ nav {
   justify-content: center;
   align-items: center;
 
-  z-index: 10;
+  z-index: 20;
 }
 
 nav a {

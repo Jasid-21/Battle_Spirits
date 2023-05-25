@@ -7,7 +7,7 @@
                 <fai icon="arrows-rotate" />
             </div>
         </div>
-        <Card :setedDef="true" :card="cardInBurst" :own="own" 
+        <Card :setedDef="true" :card="cardInBurst" :own="own" :place="'in_burst'"
         :margin_left="0" v-if="Object.keys(cardInBurst).length > 0" />
     </div>
 </template>

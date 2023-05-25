@@ -19,5 +19,6 @@ export default {
     active: false,
     activePhase: 'Start',
     players: [],
-    messages: []
+    messages: [],
+    requests: []
 }

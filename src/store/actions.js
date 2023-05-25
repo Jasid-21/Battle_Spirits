@@ -7,7 +7,7 @@ export default {
 
         const socket = state.socket.socket;
         if (name == 'Core') {
-            socket.emit('increment_cores', {player_org: socket.id, origin: 'in_reserve', op_id: state.op_id});
+            socket.emit('increment_cores', { player_org: socket.id, origin: 'in_reserve', op_id: state.op_id });
             return;
         }
 
@@ -74,6 +74,22 @@ export default {
         destinyObj.forEach(c => c.selected = false);
 
         return { moved: true, core_ids: ids };
+    },
+
+    revealCards({ state }, payload) {
+        const { op_id } = payload;
+        const player_org = state.players.find(p => p.id != op_id);
+        console.log(player_org);
+        state.cards[player_org.id].in_reveal.forEach(c => c.seted = false);
+    },
+
+    multiReturnToBottom({ state }, payload) {
+        const { player_org } = payload;
+
+        const cards = state.cards[player_org].in_reveal;
+        state.cards[player_org].in_deck.push(...cards);
+
+        state.cards[player_org].in_reveal.splice(0, cards.length);
     },
 
     returnToDeck({state}, payload) {
