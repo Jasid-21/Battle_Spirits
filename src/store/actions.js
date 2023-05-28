@@ -25,7 +25,6 @@ export default {
     moveCores({state}, payload) {
         const { player_org, player_dest, origin, destiny, 
         card_id_org, card_id_dest, core_ids } = payload;
-        console.log(payload);
 
         // Get the orogin object.
         var originObj;
@@ -58,7 +57,6 @@ export default {
 
                 originObj.splice(idx, 1);
             }
-            console.log(cores);
         } else {
             cores = originObj.filter(c => c.selected); // By reference.
             ids = cores.map(c => c.id);
@@ -79,7 +77,6 @@ export default {
     revealCards({ state, commit }, payload) {
         const { op_id } = payload;
         const player_org = state.players.find(p => p.id != op_id);
-        console.log(player_org);
         state.cards[player_org.id].in_reveal.forEach(c => c.seted = false);
 
         commit('newMessage', { msg: 'Cards revealed', player_org, important: true });
@@ -110,12 +107,10 @@ export default {
     },
 
     drawCard({state, commit}, { num, player_org }) {
-        console.log(state.cards);
         if (!num) { num = 1; }
 
         const cards = state.cards[player_org].in_deck.splice(0, num);
         state.cards[player_org].in_hand.push(...cards);
-        console.log(...cards);
         commit('newMessage', { msg: 'Draw card!', player_org, important: true });
 
         return cards;
@@ -123,7 +118,6 @@ export default {
 
     moveCard({state}, payload) {
         const { origin, destiny, player_dest, player_org, card_id } = payload;
-        console.log(payload);
 
         // Validating complete information.
         if (!player_org || !player_dest) {

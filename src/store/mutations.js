@@ -25,7 +25,6 @@ export default {
   selectCard(state, payload) {
     const { card_id, origin, player_org } = payload;
     const card = state.cards[player_org][origin].find(c => c.id == card_id);
-    console.log(card);
 
     card.select();
   },
@@ -66,8 +65,6 @@ export default {
   setCores(state, { cores, op_cores }) {
     state.cores[state.socket.socket.id] = cores;
     state.cores[state.op_id] = op_cores;
-
-    console.log(state.cores);
   },
 
   incrementCores(state, payload) {
@@ -158,7 +155,6 @@ export default {
   },
 
   setBoardId(state, payload) {
-    console.log(payload);
     state.board_id = payload;
   },
 
@@ -197,7 +193,6 @@ export default {
   },
 
   setAllHand(state, payload) {
-    console.log(state.cards[payload].in_hand);
     state.cards[payload].in_hand.forEach(card => card.seted = true);
   },
 

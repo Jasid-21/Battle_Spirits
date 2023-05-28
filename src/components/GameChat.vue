@@ -34,7 +34,6 @@ export default {
         }
 
         const newMessage = () => {
-            console.log(players);
             const params = { 
                 msg: message.value,
                 player_org: socket.id,

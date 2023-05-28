@@ -2,7 +2,6 @@ import { io } from "socket.io-client";
 import Swal from 'sweetalert2'
 
 export function newMessage(msg, sender_id, players, important = false) {
-    console.log(players);
     const sender = players.find(p => p.id == sender_id);
     if (!sender) { return; }
 
@@ -90,7 +89,6 @@ export class socketCreator {
         });
 
         this.socket.on('move_card', info => {
-            console.log(info);
             this.store.dispatch('moveCard', info);
         });
 
@@ -127,7 +125,6 @@ export class socketCreator {
         });
 
         this.socket.on('change_turn', info => {
-            console.log(info);
             this.store.commit('changeTurn', info);
         });
 

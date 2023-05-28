@@ -60,9 +60,6 @@ export default {
                 return;
             }
 
-            console.log(socket.socket.id);
-            console.log(choosen_room.value.id);
-
             if (socket.socket.id == choosen_room.value.id) {
                 Swal.fire({
                     title: 'App message',

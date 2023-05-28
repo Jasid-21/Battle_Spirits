@@ -41,7 +41,6 @@ export function dropCard(ev, player_org, player_dest, destiny, store) {
         const card_id = ev.dataTransfer.getData('card_id');
 
         const params = { origin, destiny, player_dest, player_org, card_id };
-        console.log(params);
         store.dispatch('moveCard', params)
         .then(moved => resolve({ moved, params }));
     });
