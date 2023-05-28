@@ -42,6 +42,7 @@
 
 <script>
 import Navbar from '@/components/Navbar.vue';
+import Swal from 'sweetalert2';
 
 export default {
     name: 'DeckLoader',
@@ -70,6 +71,14 @@ export default {
         },
 
         saveDeck() {
+            if (this.deck.length < 50) {
+                Swal.fire({
+                    title: 'App message',
+                    text: 'Your deck must have 50 cards'
+                });
+                return;
+            }
+
             const old = JSON.parse(localStorage.getItem('BSS_Decklist') || '[]');
             const deck_index = old.findIndex(el => el.name == this.deck_name);
 

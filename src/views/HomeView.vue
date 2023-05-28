@@ -10,13 +10,16 @@
         <strong>Privacy Policy: </strong>This website does not store or use information from visitors.
       </div>
       <div>
-        This web application is a nonprofit fanmade Online version for Bandai's Battle Spirits Saga tcg.
+        This website is a nonprofit fanmade Online version for Bandai's Battle Spirits Saga tcg.
       </div>
       <div>
         Card design & artwork are <b>© BNP/BANDAI</b> and used without permission under fair use.
       </div>
       <div>
         Please support the official release.
+        <a class="official_site" href="https://battlespirits-saga.com/" target="_blank">
+          Oficial Site
+        </a>
       </div>
     </footer>
   </div>
@@ -47,6 +50,10 @@ export default {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+}
+
+.official_site {
+  color: blue;
 }
 
 footer {

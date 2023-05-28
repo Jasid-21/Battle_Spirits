@@ -73,6 +73,11 @@ export default {
   incrementCores(state, payload) {
     const { player_org, origin, core } = payload;
     state.cores[player_org][origin].push(core);
+
+    const players = state.players;
+    const message = newMessage('Cores refreshed', player_org, players, true);
+    if (!message) { return; }
+    state.messages.push(message);
   },
 
   refreshAllCards(state, payload) {

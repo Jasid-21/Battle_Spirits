@@ -111,7 +111,7 @@ export default {
         }
 
         const refresh = async () => {
-            const resp = await fetch('http://127.0.0.1:3000/rooms/getAll');
+            const resp = await fetch('/rooms/getAll');
             const status = resp.status;
 
             if (status === 200) {

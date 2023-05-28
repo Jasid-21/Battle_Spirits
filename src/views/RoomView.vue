@@ -26,7 +26,6 @@ import PhasesButtonsVue from '../components/PhasesButtons.vue';
 import GameChat from '@/components/GameChat.vue';
 import { useStore } from 'vuex';
 import { useRouter } from 'vue-router';
-import { computed } from 'vue';
 
 export default {
     name: 'GameRoom',

@@ -50,7 +50,7 @@ export class socketCreator {
         this.deck_list = deck_list;
         this.chosen_deck = {};
         this.store = store;
-        this.socket = new io('http://127.0.0.1:3000');
+        this.socket = new io();
 
         this.socket.on('connect', () => {
             console.log("Connectd: ", this.socket.id);
@@ -127,7 +127,8 @@ export class socketCreator {
         });
 
         this.socket.on('change_turn', info => {
-            this.store.commit('changeTurn');
+            console.log(info);
+            this.store.commit('changeTurn', info);
         });
 
         this.socket.on('refresh_all', info => {

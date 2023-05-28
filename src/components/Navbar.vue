@@ -3,6 +3,11 @@
     <router-link to="/">Home</router-link> |
     <router-link to="/rooms">Multiplayer</router-link> |
     <router-link to="/loadDeck">Deck Builder</router-link>
+
+    <a class="to_shop" href="https://www.tcgplayer.com/" target="_blank">
+      Shop Cards 
+      <fai icon="shop" />
+    </a>
   </nav>
 </template>
 
@@ -29,6 +34,15 @@ nav {
   align-items: center;
 
   z-index: 20;
+}
+
+.to_shop {
+  position: absolute;
+  right: 10px;
+}
+
+.to_shop:hover {
+  color: rgb(0, 0, 153);
 }
 
 nav a {
