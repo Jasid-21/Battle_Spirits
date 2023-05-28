@@ -1,7 +1,7 @@
 <template>
     <div ref="core" class="core" draggable="true"
     :class="{soul: coreObj.soul, selected: coreObj.selected}"
-    @click="flipSelectStatus" @dragstart.stop="drag($event)">
+    @click="flipSelectStatus" @dragstart.stop="drag($event)" @dblclick.stop>
         <img src="../assets/soul_core.png" v-if="coreObj.soul">
         <img src="../assets/common_core.png" v-else>
     </div>

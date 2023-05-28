@@ -1,9 +1,9 @@
 <template>
     <div class="card_container" :id="cardObj.id"
-    :class="{rested: cardObj.rested}" ref="card"
-    @dragenter.prevent @dragover.prevent draggable="true"
-    :style="{marginLeft: margin_left + 'px'}"
-    @dragstart.stop="drag($event)" @dblclick="restUnrest" @drop.stop="drop($event)">
+    :style="{marginLeft: margin_left + 'px'}" ref="card"
+    :class="{ rested: cardObj.rested, selected: cardObj.selected, activated: cardObj.activated }"
+    @dragenter.prevent @dragover.prevent draggable="true" @click.shift="activateEffect" @click.exact="selectCard"
+    @dragstart.stop="drag($event)" @dblclick.exact="restUnrest" @drop.stop="drop($event)">
         <img :src="cardObj.url" @mouseenter="setAsCurrent" v-if="cardObj.url && !cardObj.seted" />
         <img src="../assets/cards/bss_reverse.jpg" @mouseenter="setAsCurrent" v-else>
         <div class="cores_container" :id="cardObj.id">
@@ -27,7 +27,7 @@ export default {
         margin_left: {type: Number, default: 15},
         card: {
             default: {
-                id: '', url: '', seted: false, 
+                id: '', url: '', seted: false, selected: false,
                 rested: false, cores: {soul: 0, commons: 0}
             }
         },
@@ -51,6 +51,24 @@ export default {
         const restedDef = props.restedDef;
         const own = props.own;
         const place = props.place;
+
+        const selectCard = () => {
+            cardObj.value.select();
+            const params = { card_id: cardObj.value.id, origin: place, player_org: own?socket.id:op_id, op_id };
+            socket.emit('select_card', params);
+        }
+
+        const activateEffect = () => {
+            if (!own) { return; }
+            cardObj.value.activate();
+            const params = {
+                card_id: cardObj.value.id,
+                origin: place, op_id,
+                player_org: own?socket.id:op_id,
+            };
+            socket.emit('activate_effect', params);
+            store.commit('newMessage', {msg: 'Effect activated', player_org: socket.id, important: true});
+        }
 
         const drop = (ev) => {
           dropCores(ev, cardObj.value.id, own?socket.id:op_id, place, store)
@@ -101,19 +119,20 @@ export default {
             cardObj.value.rested = restedDef;
         })
 
-        return {marginLeft, cardObj, setAsCurrent, drag, drop, restUnrest, card};
+        return { marginLeft, cardObj, setAsCurrent, drag, drop, restUnrest, activateEffect, selectCard, card };
     }
 }
 </script>
 
 <style scoped>
 .cores_container {
-    max-width: 100% !important;
+    width: 100% !important;
     position: absolute;
     left: 0px;
     top: 50%;
 
     display: flex;
+    justify-content: center;
     flex-wrap: wrap;
 }
 
@@ -127,15 +146,24 @@ export default {
     min-height: var(--sq_height) !important;
     width: var(--sq_width) !important;
     height: var(--sq_height) !important;
+    box-shadow: 0px 0px 0px 0px rgb(201, 30, 150);
 
     position: relative;
     display: flex;
     justify-content: center;
     align-items: center;
 
-    transition: transform 250ms ease;
+    transition: transform 250ms ease, box-shadow 250ms ease;
 
     z-index: 20;
+}
+
+.card_container.activated {
+    box-shadow: 0px 0px 4px 3px rgb(201, 30, 150);
+}
+
+.card_container.selected {
+    box-shadow: 0px 0px 4px 3px rgb(30, 41, 201);
 }
 
 .card_container.rested {

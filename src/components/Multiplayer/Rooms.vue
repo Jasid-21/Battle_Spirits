@@ -9,8 +9,9 @@
         </div>
         <div class="buttons">
             <button class="refresh" @click="refresh">Refresh</button>
-            <button class="host" @click="host">Host</button>
-            <button class="request" @click="request">request</button>
+            <button class="host" @click="host" v-if="!hosting">Host</button>
+            <button class="cancel" @click="cancel" v-if="hosting">Cancel</button>
+            <button class="request" @click="request" :disabled="hosting">Request</button>
         </div>
     </div>
 </template>
@@ -35,6 +36,7 @@ export default {
 
 
         var socket;
+        const hosting = ref(false);
         const deck_list = ref([]);
         const rooms = ref([]);
         const choosen_room = ref({name: '', id: ''});
@@ -53,6 +55,19 @@ export default {
                 Swal.fire({
                     title: 'App message',
                     html: 'You need to select a <strong>room</strong> to request a duel...'
+                });
+
+                return;
+            }
+
+            console.log(socket.socket.id);
+            console.log(choosen_room.value.id);
+
+            if (socket.socket.id == choosen_room.value.id) {
+                Swal.fire({
+                    title: 'App message',
+                    icon: 'info',
+                    html: "You can't request a duel to yourself..."
                 });
 
                 return;
@@ -87,6 +102,12 @@ export default {
             const deck = deck_list.value.find(d => d.name == choosen_deck.value).deck;
 
             socket.socket.emit('host_room', {username: username.value, deck});
+            hosting.value = true;
+        }
+
+        const cancel = () => {
+            socket.socket.emit('cancel_hosting');
+            hosting.value = false;
         }
 
         const refresh = async () => {
@@ -116,7 +137,9 @@ export default {
             socket.setDeck(choosen_deck);
         })
 
-        return {username, choosen_deck, deck_list, rooms, choosen_room, selectRoom, host, refresh, request};
+        return {username, choosen_deck, deck_list, 
+            rooms, choosen_room, hosting, cancel,
+            selectRoom, host, refresh, request};
     }
 
 }

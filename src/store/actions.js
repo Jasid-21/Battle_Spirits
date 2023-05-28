@@ -76,27 +76,31 @@ export default {
         return { moved: true, core_ids: ids };
     },
 
-    revealCards({ state }, payload) {
+    revealCards({ state, commit }, payload) {
         const { op_id } = payload;
         const player_org = state.players.find(p => p.id != op_id);
         console.log(player_org);
         state.cards[player_org.id].in_reveal.forEach(c => c.seted = false);
+
+        commit('newMessage', { msg: 'Cards revealed', player_org, important: true });
     },
 
-    multiReturnToBottom({ state }, payload) {
+    multiReturnToBottom({ state, commit }, payload) {
         const { player_org } = payload;
 
         const cards = state.cards[player_org].in_reveal;
         state.cards[player_org].in_deck.push(...cards);
 
         state.cards[player_org].in_reveal.splice(0, cards.length);
+        commit('newMessage', { msg: 'Returning card to bottom', player_org, important: true });
     },
 
-    returnToDeck({state}, payload) {
+    returnToDeck({state, commit}, payload) {
         const { origin, player_org, top, card_id } = payload;
         const card_idx = state.cards[player_org][origin].findIndex(c => c.id == card_id);
         const card = state.cards[player_org][origin].splice(card_idx, 1)[0];
 
+        commit('newMessage', { msg: 'Returning to deck', player_org, important: true });
         if (top) {
             state.cards[player_org].in_deck.splice(0, 0, card);
             return;
@@ -105,13 +109,15 @@ export default {
         state.cards[player_org].in_deck.push(card);
     },
 
-    drawCard({state}, { num, player_org }) {
+    drawCard({state, commit}, { num, player_org }) {
         console.log(state.cards);
         if (!num) { num = 1; }
 
         const cards = state.cards[player_org].in_deck.splice(0, num);
         state.cards[player_org].in_hand.push(...cards);
         console.log(...cards);
+        commit('newMessage', { msg: 'Draw card!', player_org, important: true });
+
         return cards;
     },
 

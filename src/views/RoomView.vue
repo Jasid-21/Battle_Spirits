@@ -2,6 +2,9 @@
     <div class="masterContainer">
         <div class="card_info">
             <CurrentCard />
+            <button class="back_to_rooms" @click="leaveRoom">
+                Leave
+            </button>
         </div>
         <div class="game_section_container">
             <div class="playable">
@@ -21,6 +24,9 @@ import Card from '@/components/Card.vue';
 import CardListDisplayer from '@/components/CardListDisplayer.vue';
 import PhasesButtonsVue from '../components/PhasesButtons.vue';
 import GameChat from '@/components/GameChat.vue';
+import { useStore } from 'vuex';
+import { useRouter } from 'vue-router';
+import { computed } from 'vue';
 
 export default {
     name: 'GameRoom',
@@ -31,6 +37,19 @@ export default {
         CardListDisplayer,
         PhasesButtonsVue,
         GameChat
+    },
+    setup() {
+        const store = useStore();
+        const router = useRouter();
+        const socket = store.state.socket.socket;
+        const op_id = store.state.op_id;
+
+        const leaveRoom = () => {
+            socket.emit('leave_room', { op_id });
+            router.push('/rooms');
+        }
+
+        return { leaveRoom };
     }
 }
 </script>
@@ -60,8 +79,29 @@ export default {
 
 .card_info {
     height: 100%;
-
     background-color: rgba(84, 84, 116, 0.6);
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.back_to_rooms {
+    width: 100px;
+    height: 25px;
+    border: 2px solid rgb(151, 151, 151);
+    margin-bottom: 10px;
+}
+
+.back_to_rooms:hover {
+    background-color: gray;
+}
+
+.back_to_rooms * {
+    text-decoration: none;
+    color: black;
+    font-weight: 700;
 }
 
 .game_section_container {

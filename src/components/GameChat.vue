@@ -1,8 +1,8 @@
 <template>
     <form class="chat">
         <ul class="messages_container" ref="messagesContainer">
-            <li class="message" v-for="(m, idx) of messages" :key="idx">
-                <strong>{{ m.sender_name }}: </strong><span>{{ m.msg }}</span>
+            <li class="message" :class="{ important: m.important }" v-for="(m, idx) of messages" :key="idx">
+                <strong>{{ m.sender_id==player_id?'You':'Oponent' }}: </strong><span>{{ m.msg }}</span>
             </li>
         </ul>
         <div class="sender">
@@ -73,9 +73,10 @@ export default {
 
 .messages_container {
     width: 100%;
-    height: 100%;
+    height: calc(100% - 10px);
     margin: 0px;
     padding: 0px;
+    padding-top: 10px;
 
     overflow-y: auto;
 }
@@ -97,7 +98,7 @@ export default {
 
 .message {
     font-size: 15px;
-    margin-top: 10px;
+    margin-bottom: 10px;
     margin-left: 5px;
     text-align: left;
 }
@@ -107,7 +108,8 @@ export default {
 }
 
 .message.important {
-    font-weight: bold;
+    font-weight: 700;
+    color: rgb(0, 0, 136);
     font-style: italic;
 }
 

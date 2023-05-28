@@ -1,4 +1,5 @@
 export default {
+    hostingName: '',
     looking: {},
     chosen_deck: {},
     cards: {},

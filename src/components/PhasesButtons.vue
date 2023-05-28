@@ -37,7 +37,7 @@ export default {
         const endTurn = () => {
             if (!active.value) { return; }
             store.commit('changeTurn');
-            socket.emit('change_turn', {op_id});
+            socket.emit('change_turn', { player_org: socket.id, op_id});
         }
 
         return { active, activePhase, phases, setAsSelected, endTurn };

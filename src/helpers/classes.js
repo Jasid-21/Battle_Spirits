@@ -1,14 +1,15 @@
 import { io } from "socket.io-client";
 import Swal from 'sweetalert2'
 
-export function newMessage(msg, sender_id, players) {
+export function newMessage(msg, sender_id, players, important = false) {
     console.log(players);
     const sender = players.find(p => p.id == sender_id);
     if (!sender) { return; }
 
     return {
-        msg,
-        sender_name: sender.username
+        msg, important,
+        sender_name: sender.username,
+        sender_id: sender.id
     }
 }
 
@@ -16,15 +17,23 @@ export class Card {
     constructor(id, url) {
         this.id = id; this.url = url;
         this.seted = false; this.rested = false;
-        this.cores = []
+        this.cores = [];
+        this.selected = false;
+        this.activated = false;
     }
 
-    restUnrest() {
-        this.rested = !this.rested;
+    select() {
+        this.selected = true;
+        setTimeout(() => {
+            this.selected = false
+        }, 250);
     }
 
-    setReveal() {
-        this.seted = !this.seted;
+    activate() {
+        this.activated = true;
+        setTimeout(() => {
+            this.activated = false
+        }, 250);
     }
 }
 
@@ -47,6 +56,10 @@ export class socketCreator {
             console.log("Connectd: ", this.socket.id);
         });
 
+        this.socket.on('hosting_room', info => {
+            this.store.commit('setHostingName', info);
+        });
+
         this.socket.on('request_duel', info => {
             this.store.commit('requestDuel', info);
         });
@@ -55,7 +68,9 @@ export class socketCreator {
             this.socket.emit('start_duel', info);
         });
 
-        this.socket.on('duel_start', ({ op_id, deck, op_deck, cores, op_cores, active, players }) => {
+        this.socket.on('duel_start', info => {
+            const { op_id, deck, op_deck, cores, op_cores, active, players } = info;
+            
             this.store.dispatch('addPlayers', { op_id, players, active });
             this.store.commit('setChoosenDecks', { deck, op_deck });
             this.store.commit('setCores', { cores, op_cores });
@@ -65,6 +80,7 @@ export class socketCreator {
         this.socket.on('socket_message', (msg) => {
             Swal.fire({
                 title: 'Server message',
+                icon: 'info',
                 text: msg.msg
             })
         });
@@ -110,7 +126,7 @@ export class socketCreator {
             this.store.dispatch('changePhase', info);
         });
 
-        this.socket.on('change_turn', () => {
+        this.socket.on('change_turn', info => {
             this.store.commit('changeTurn');
         });
 
@@ -133,6 +149,14 @@ export class socketCreator {
 
         this.socket.on('shuffle_deck', info => {
             this.store.commit('shuffleDeck', info);
+        });
+
+        this.socket.on('activate_effect', info => {
+            this.store.commit('activateEffect', info);
+        });
+
+        this.socket.on('select_card', info => {
+            this.store.commit('selectCard', info);
         });
     }
 

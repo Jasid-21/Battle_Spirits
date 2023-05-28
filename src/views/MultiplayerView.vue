@@ -6,6 +6,11 @@
       <Requests :chosen_deck="chosen_deck" />
       <Rooms :username="username" :chosen_deck="chosen_deck" />
     </div>
+    <div class="hosting_username" v-if="hosting_name">
+      <b>Your username.</b>
+      <br>
+      {{ hosting_name }}
+    </div>
   </div>
 </template>
 
@@ -14,7 +19,8 @@ import Navbar from '@/components/Navbar.vue';
 import Rooms from '@/components/Multiplayer/Rooms.vue';
 import UserData from '@/components/Multiplayer/UserData.vue';
 import Requests from '@/components/Multiplayer/Requests.vue';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
+import { useStore } from 'vuex';
 
 export default {
     name: "Multiplayer",
@@ -25,8 +31,10 @@ export default {
       Requests
     },
     setup() {
+      const store = useStore();
       const username = ref('');
       const chosen_deck = ref('__none__');
+      const hosting_name = computed(() => store.state.hostingName);
 
       const handleUsername = (usrName) => {
         console.log(usrName);
@@ -37,7 +45,7 @@ export default {
         chosen_deck.value = deck;
       }
 
-      return { handleUsername, handleChosenDeck, username, chosen_deck };
+      return { handleUsername, handleChosenDeck, username, chosen_deck, hosting_name };
     }
 }
 </script>
@@ -49,5 +57,9 @@ export default {
 
   display: flex;
   justify-content: space-around;
+}
+
+.hosting_username {
+  margin-top: 50px;
 }
 </style>

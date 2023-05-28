@@ -1,137 +1,202 @@
 import { Card, newMessage } from '@/helpers/classes';
-import { shuffleArray } from '@/helpers/functions';
 
 export default {
-    newMessage(state, payload) {
-      const { msg, player_org, players } = payload;
-      const message = newMessage(msg, player_org, state.players, players);
-      if (!message) { return; }
-      state.messages.push(message);
-    },
+  clearRequests(state) {
+    if (state.requests.length <= 0) return;
+    state.requests.splice(0, state.requests.length);
+  },
 
-    changeTurn(state) {
-      state.active = !state.active;
-      state.activePhase = 'Start';
-    },
+  setHostingName(state, { username }) {
+    state.hostingName = username;
+  },
 
-    refreshAllCores(state, payload) {
-      const { player_org } = payload;
-      const in_trash = state.cores[player_org].in_trash;
-      const in_reserve = state.cores[player_org].in_reserve;
+  activateEffect(state, payload) {
+    const { card_id, origin, player_org } = payload;
+    const card = state.cards[player_org][origin].find(c => c.id == card_id);
 
-      in_reserve.push(...in_trash);
-      in_trash.splice(0, in_trash.length);
-    },
+    card.activate();
 
-    setCores(state, { cores, op_cores }) {
-      state.cores[state.socket.socket.id] = cores;
-      state.cores[state.op_id] = op_cores;
+    const players = state.players;
+    const message = newMessage('Effect activated!', player_org, players, true);
+    if (!message) { return; }
+    state.messages.push(message);
+  },
 
-      console.log(state.cores);
-    },
+  selectCard(state, payload) {
+    const { card_id, origin, player_org } = payload;
+    const card = state.cards[player_org][origin].find(c => c.id == card_id);
+    console.log(card);
 
-    incrementCores(state, payload) {
-      const { player_org, origin, core } = payload;
-      state.cores[player_org][origin].push(core);
-    },
+    card.select();
+  },
 
-    refreshAllCards(state, payload) {
-      const { player_org } = payload;
+  newMessage(state, payload) {
+    const { msg, player_org, important } = payload;
+    const players = state.players;
+    const message = newMessage(msg, player_org, players, important);
+    if (!message) { return; }
+    state.messages.push(message);
+  },
 
-      const in_front = state.cards[player_org].in_front;
-      const in_middle = state.cards[player_org].in_middle;
-      const in_back = state.cards[player_org].in_back;
+  changeTurn(state, payload) {
+    const { player_org } = payload;
+    state.active = !state.active;
+    state.activePhase = 'Start';
 
-      in_front.forEach(c => c.rested = false);
-      in_middle.forEach(c => c.rested = false);
-      in_back.forEach(c => c.rested = false);
-    },
+    const players = state.players;
+    const message = newMessage('End turn', player_org, players, true);
+    if (!message) { return; }
+    state.messages.push(message);
+  },
 
-    revealTop(state, payload) {
-      const { player_org } = payload;
-      const card = state.cards[player_org].in_deck.shift();
-      state.cards[player_org].in_reveal.push(card);
-    },
+  refreshAllCores(state, payload) {
+    const { player_org } = payload;
+    const in_trash = state.cores[player_org].in_trash;
+    const in_reserve = state.cores[player_org].in_reserve;
 
-    flipBurstCard(state, payload) {
-      const { player_org } = payload;
-      state.cards[player_org].in_burst.seted = !state.cards[player_org].in_burst.seted;
-    },
-    
-    shuffleDeck(state, payload){
-      const { deck, player_org } = payload;
-      state.cards[player_org].in_deck = deck;
-    },
+    in_reserve.push(...in_trash);
+    in_trash.splice(0, in_trash.length);
 
-    lookingSomething(state, payload) {
-      const { player, origin } = payload;
-      state.looking[player] = origin;
-    },
+    const players = state.players;
+    const message = newMessage('Cores refreshed', player_org, players, true);
+    if (!message) { return; }
+    state.messages.push(message);
+  },
 
-    changeDisplayerStatus(state, payload) {
-      const {status, origin, player} = payload;
+  setCores(state, { cores, op_cores }) {
+    state.cores[state.socket.socket.id] = cores;
+    state.cores[state.op_id] = op_cores;
 
-      if (origin == 'in_deck' && player == state.op_id) {
-        alert("Unauthorized action!");
-        return;
-      }
+    console.log(state.cores);
+  },
 
-      if (!status) {
-        state.cardDisplayer.showing = !state.cardDisplayer.showing;
-        return;
-      }
+  incrementCores(state, payload) {
+    const { player_org, origin, core } = payload;
+    state.cores[player_org][origin].push(core);
+  },
 
-      state.cardDisplayer.showing = status;
-      state.cardDisplayer.origin = origin;
-      state.cardDisplayer.player = player;
+  refreshAllCards(state, payload) {
+    const { player_org } = payload;
 
-    },
+    const in_front = state.cards[player_org].in_front;
+    const in_middle = state.cards[player_org].in_middle;
+    const in_back = state.cards[player_org].in_back;
 
-    setBoardId(state, payload) {
-      console.log(payload);
-      state.board_id = payload;
-    },
+    in_front.forEach(c => c.rested = false);
+    in_middle.forEach(c => c.rested = false);
+    in_back.forEach(c => c.rested = false);
 
-    setSocket(state, payload) {
-      if (!payload) {
-        alert("Socket not found...");
-        return;
-      }
+    const players = state.players;
+    const message = newMessage('Cards refreshed', player_org, players, true);
+    if (!message) { return; }
+    state.messages.push(message);
+  },
 
-      state.socket = payload;
-    },
+  revealTop(state, payload) {
+    const { player_org } = payload;
+    const card = state.cards[player_org].in_deck.shift();
+    state.cards[player_org].in_reveal.push(card);
 
-    setCurrentCard(state, payload) {
-      state.current_card = payload
-    },
+    const players = state.players;
+    const message = newMessage('Reveal from top', player_org, players, true);
+    if (!message) { return; }
+    state.messages.push(message);
+  },
 
-    setChoosenDecks(state, { deck, op_deck }) {
-      state.cards[state.socket.socket.id].in_deck = deck.map(c => new Card(c.id, c.url));
-      state.cards[state.op_id].in_deck = op_deck.map(c => new Card(c.id, c.url));
-      
-      state.cards[state.socket.socket.id].in_deck.forEach(card => {
-        const img = new Image();
-        img.src = card.url;
-      });
+  flipBurstCard(state, payload) {
+    const { player_org } = payload;
+    state.cards[player_org].in_burst.seted = !state.cards[player_org].in_burst.seted;
 
-      state.cards[state.op_id].in_deck.forEach(card => {
-        const img = new Image();
-        img.src = card.url;
-      });
-    },
+    const players = state.players;
+    const message = newMessage('Activate burst!', player_org, players, true);
+    if (!message) { return; }
+    state.messages.push(message);
+  },
+  
+  shuffleDeck(state, payload){
+    const { deck, player_org } = payload;
+    state.cards[player_org].in_deck = deck;
 
-    restUnrest(state, payload) {
-      const { card_id, place } = payload;
-      const card = state.cards[state.op_id][place].find(c => c.id == card_id);
-      card.rested = !card.rested;
-    },
+    const players = state.players;
+    const message = newMessage('Deck shuffled', player_org, players, true);
+    if (!message) { return; }
+    state.messages.push(message);
+  },
 
-    setAllHand(state, payload) {
-      console.log(state.cards[payload].in_hand);
-      state.cards[payload].in_hand.forEach(card => card.seted = true);
-    },
+  lookingSomething(state, payload) {
+    const { player, origin } = payload;
+    state.looking[player] = origin;
 
-    requestDuel(state, payload) {
-      state.requests.push(payload);
+    const players = state.players;
+    const message = newMessage('Looking deck', player, players, true);
+    if (!message) { return; }
+    state.messages.push(message);
+  },
+
+  changeDisplayerStatus(state, payload) {
+    const {status, origin, player} = payload;
+
+    if (origin == 'in_deck' && player == state.op_id) {
+      alert("Unauthorized action!");
+      return;
     }
+
+    if (!status) {
+      state.cardDisplayer.showing = !state.cardDisplayer.showing;
+      return;
+    }
+
+    state.cardDisplayer.showing = status;
+    state.cardDisplayer.origin = origin;
+    state.cardDisplayer.player = player;
+
+  },
+
+  setBoardId(state, payload) {
+    console.log(payload);
+    state.board_id = payload;
+  },
+
+  setSocket(state, payload) {
+    if (!payload) {
+      alert("Socket not found...");
+      return;
+    }
+
+    state.socket = payload;
+  },
+
+  setCurrentCard(state, payload) {
+    state.current_card = payload
+  },
+
+  setChoosenDecks(state, { deck, op_deck }) {
+    state.cards[state.socket.socket.id].in_deck = deck.map(c => new Card(c.id, c.url));
+    state.cards[state.op_id].in_deck = op_deck.map(c => new Card(c.id, c.url));
+    
+    state.cards[state.socket.socket.id].in_deck.forEach(card => {
+      const img = new Image();
+      img.src = card.url;
+    });
+
+    state.cards[state.op_id].in_deck.forEach(card => {
+      const img = new Image();
+      img.src = card.url;
+    });
+  },
+
+  restUnrest(state, payload) {
+    const { card_id, place } = payload;
+    const card = state.cards[state.op_id][place].find(c => c.id == card_id);
+    card.rested = !card.rested;
+  },
+
+  setAllHand(state, payload) {
+    console.log(state.cards[payload].in_hand);
+    state.cards[payload].in_hand.forEach(card => card.seted = true);
+  },
+
+  requestDuel(state, payload) {
+    state.requests.push(payload);
+  }
 }

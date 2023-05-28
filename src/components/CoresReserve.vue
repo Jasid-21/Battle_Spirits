@@ -10,11 +10,9 @@
 
 <script>
 import { useStore } from 'vuex';
+import { computed, onMounted } from 'vue';
 import { dropCores } from '@/helpers/functions';
 import Core from './Core.vue';
-
-import Swal from 'sweetalert2';
-import { computed } from 'vue';
 
 export default {
     name: 'reserve_zone',

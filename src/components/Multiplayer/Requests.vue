@@ -16,7 +16,7 @@
 </template>
 
 <script>
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useStore } from 'vuex';
 
 export default {
@@ -36,6 +36,10 @@ export default {
         const accept = () => {
             socket.value.emit('accept_duel', { op_id: chosen_request.value.id });
         }
+
+        onMounted(() => {
+            store.commit('clearRequests');
+        })
 
         return { requests, chosen_request, selectRequest, accept };
     }
